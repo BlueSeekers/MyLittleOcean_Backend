@@ -102,7 +102,6 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
     // 기타 서비스 등록
     services.AddSingleton<LoggingService>();
     services.AddHostedService<UdpServerService>();
-    services.AddSingleton<RankingService>();
 
     // CORS 설정
     services.AddCors(options => {

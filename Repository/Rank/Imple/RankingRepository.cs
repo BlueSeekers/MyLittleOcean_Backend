@@ -16,14 +16,14 @@ public class RankingRepository : IRankingRepository
         {
             var query = @"
                 SELECT COUNT(*) + 1 
-                FROM lib_rank 
+                FROM tb_rank 
                 WHERE rank_value > (
                     SELECT rank_value 
-                    FROM lib_rank 
+                    FROM tb_rank 
                     WHERE user_no = @UserNo
                 )";
 
-            var rank = db.ExecuteScalar<long>(query, new { UserNo = userNo });
+            var rank = db.ExecuteScalar<int>(query, new { UserNo = userNo });
             return rank;
         }
     }
@@ -33,7 +33,7 @@ public class RankingRepository : IRankingRepository
         {
             string sql = @"
                 SELECT rank_no, user_no, rank_value, create_date 
-                FROM lib_rank 
+                FROM tb_rank 
                 ORDER BY rank_value DESC 
                 LIMIT @TopN";
             return db.Query<Rank>(sql, new { TopN = topN }).ToList();
@@ -45,7 +45,7 @@ public class RankingRepository : IRankingRepository
         using (IDbConnection db = new MySqlConnection(_connectionString))
         {
             string sql = @"
-                INSERT INTO lib_rank (user_no, rank_value, create_date) 
+                INSERT INTO tb_rank (user_no, rank_value, create_date) 
                 VALUES (@UserNo, @RankValue, NOW())
                 ON DUPLICATE KEY UPDATE 
                     rank_value = VALUES(rank_value), 

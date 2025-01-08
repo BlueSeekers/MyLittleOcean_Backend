@@ -56,7 +56,7 @@ public class RankingService : IRankingService
         _rankingRepository.UpdateRank(rank);
     }
     // 랭킹 정보 조회 (유저의 순위와 상위 랭킹 리스트)
-    public RankingInfo GetRankingInfo(int userNo, int topCount = DEFAULT_RANK_COUNT)
+    public RankingInfoDto GetRankingInfo(int userNo, int topCount = DEFAULT_RANK_COUNT)
     {
         if (userNo <= 0)
         {
@@ -71,7 +71,7 @@ public class RankingService : IRankingService
         var userRank = GetUserRanking(userNo);
         var topRanks = GetTopRanks(topCount);
 
-        return new RankingInfo
+        return new RankingInfoDto
         {
             UserRank = userRank,
             TopRanks = topRanks
@@ -79,9 +79,3 @@ public class RankingService : IRankingService
     }
 }
 
-// 랭킹 정보를 담는 DTO 클래스
-public class RankingInfo
-{
-    public long UserRank { get; set; }
-    public List<Rank>? TopRanks { get; set; }
-}
