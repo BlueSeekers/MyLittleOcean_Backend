@@ -1,11 +1,11 @@
-﻿public static class UserModule {
+﻿public static class AuthModule {
 
     public static IServiceCollection AddUserModule(this IServiceCollection services, string connectionString) {
         // Repository 등록
-        services.AddScoped<IUserRepository>(provider => new UserRepository(connectionString));
+        services.AddScoped<IAuthRepository>(provider => new AuthRepository(connectionString));
 
         // Service 등록
-        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

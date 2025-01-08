@@ -6,19 +6,22 @@ using System.Text;
 
 [ApiController]
 [Route("[controller]")]
-public class UserController : ControllerBase {
+[ApiExplorerSettings(GroupName = "Auth")]
+public class AuthController : ControllerBase {
     private readonly string _jwtKey = "blueseekers_0703_my_little_ocean_story"; // JWT 비밀 키
     private readonly string _issuer = "http://localhost:7122";
     private readonly string _audience = "http://localhost:7122";
 
-    private readonly IUserService _userService;
+    private readonly IAuthService _userService;
 
-    public UserController(IUserService userService) {
+    public AuthController(IAuthService userService) {
         _userService = userService;
     }
 
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request) {
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public IActionResult Login([FromBody] LoginRequestDto request) {
         if (request.Username == "test" && request.Password == "password") {
             // Access Token 생성
             var accessToken = GenerateToken(request.Username, TimeSpan.FromMinutes(30)); // 유효기간 30분
@@ -36,7 +39,7 @@ public class UserController : ControllerBase {
     }
 
     [HttpPost("refresh")]
-    public IActionResult Refresh([FromBody] RefreshRequest request) {
+    public IActionResult Refresh([FromBody] RefreshRequestDto request) {
         try {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_jwtKey);
@@ -88,7 +91,7 @@ public class UserController : ControllerBase {
     }
 
     [HttpPost("signup")]
-    public IActionResult CreateUser([FromBody] UserCreateDto userCreateDto) {
+    public IActionResult CreateUser([FromBody] AuthCreateDto userCreateDto) {
         if (userCreateDto.userId.IsNullOrEmpty()) {
             return BadRequest("No information exists");
         }
@@ -104,15 +107,4 @@ public class UserController : ControllerBase {
         }
     }
 
-}
-
-// 로그인 요청 DTO
-public class LoginRequest {
-    public string Username { get; set; }
-    public string Password { get; set; }
-}
-
-// Refresh 요청 DTO
-public class RefreshRequest {
-    public string RefreshToken { get; set; }
 }

@@ -1,11 +1,11 @@
-﻿public class UserService : IUserService {
-    private readonly IUserRepository _userRepository;
+﻿public class AuthService : IAuthService {
+    private readonly IAuthRepository _userRepository;
 
-    public UserService(IUserRepository userRepository) {
+    public AuthService(IAuthRepository userRepository) {
         _userRepository = userRepository;
     }
 
-    public int CreateUser(UserCreateDto userCreateDto) {
+    public int CreateUser(AuthCreateDto userCreateDto) {
         int userNo = _userRepository.CreateUser(userCreateDto);
         Console.WriteLine($"CreateUser returned: {userNo}");
 

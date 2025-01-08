@@ -6,14 +6,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 환경 변수 및 설정 값
+// 환경 변수 및 설정 값 확인
 var jwtKey = builder.Configuration["JwtSettings:Secret"] ?? throw new ArgumentNullException("JWT Secret is not configured.");
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? throw new ArgumentNullException("JWT Issuer is not configured.");
+var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? throw new ArgumentNullException("JWT Audience is not configured.");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new ArgumentNullException("Connection string is not configured.");
 
 // 서비스 등록
-ConfigureServices(builder.Services, jwtKey, connectionString);
+ConfigureServices(builder.Services, jwtKey, jwtIssuer, jwtAudience, connectionString);
 
-// 모듈 등록
+// 모듈 등록 (사용자 정의 서비스)
 builder.Services.AddUserModule(connectionString);
 
 // 애플리케이션 빌드
@@ -24,7 +26,7 @@ ConfigureMiddleware(app);
 
 app.Run();
 
-void ConfigureServices(IServiceCollection services, string jwtKey, string connectionString) {
+void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIssuer, string jwtAudience, string connectionString) {
     // 컨트롤러 및 글로벌 경로 프리픽스 설정
     services.AddControllers(options => {
         options.Conventions.Add(new GlobalRoutePrefix("api/v1"));
@@ -36,7 +38,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string connec
         c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
             Title = "MyLIO API",
             Version = "v1",
-            Description = "This is the API documentation for MyLIO.",
+            Description = "API documentation for MyLIO.",
             Contact = new Microsoft.OpenApi.Models.OpenApiContact {
                 Name = "Support Team",
                 Email = "support@mylio.com",
@@ -54,13 +56,10 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string connec
             Description = "Enter 'Bearer' followed by your token in the text box below.\nExample: Bearer <AccessToken>"
         });
 
-        c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-        {
+        c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
             {
-                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-                {
-                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                    {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference {
                         Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
                         Id = "Bearer"
                     }
@@ -68,6 +67,9 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string connec
                 Array.Empty<string>()
             }
         });
+
+        // Enable Swagger Annotations
+        c.EnableAnnotations();
     });
 
     // JWT 인증 설정
@@ -79,8 +81,8 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string connec
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-                ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
                 IssuerSigningKey = new SymmetricSecurityKey(key)
             };
             options.Events = new JwtBearerEvents {

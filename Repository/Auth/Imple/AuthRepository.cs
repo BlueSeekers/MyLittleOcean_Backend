@@ -2,15 +2,15 @@
 using Dapper;
 using System.Data;
 
-public class UserRepository : IUserRepository {
+public class AuthRepository : IAuthRepository {
 
     private readonly string _connectionString;
 
-    public UserRepository(string connectionString) {
+    public AuthRepository(string connectionString) {
         _connectionString = connectionString;
     }
 
-    public int CreateUser(UserCreateDto userCreateDto) {
+    public int CreateUser(AuthCreateDto userCreateDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"INSERT INTO tb_user_info
                 (user_id, user_name, user_pwd, user_email, account_locked, last_pwd_date, create_date, update_date, provider)
