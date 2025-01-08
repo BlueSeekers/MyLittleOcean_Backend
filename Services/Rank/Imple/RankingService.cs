@@ -25,7 +25,7 @@ public class RankingService : IRankingService
         return _rankingRepository.GetTopRanks(count);
     }
     // 특정 유저의 랭킹 순위 조회
-    public long GetUserRanking(long userNo)
+    public int GetUserRanking(int userNo)
     {
         if (userNo <= 0)
         {
@@ -56,7 +56,7 @@ public class RankingService : IRankingService
         _rankingRepository.UpdateRank(rank);
     }
     // 랭킹 정보 조회 (유저의 순위와 상위 랭킹 리스트)
-    public RankingInfo GetRankingInfo(long userNo, int topCount = DEFAULT_RANK_COUNT)
+    public RankingInfo GetRankingInfo(int userNo, int topCount = DEFAULT_RANK_COUNT)
     {
         if (userNo <= 0)
         {

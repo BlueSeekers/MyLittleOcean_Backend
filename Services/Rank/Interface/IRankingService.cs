@@ -2,7 +2,7 @@
 {
     List<Rank> GetRanks();
     List<Rank> GetTopRanks(int count);
-    long GetUserRanking(long userNo);
+    int GetUserRanking(int userNo);
     void UpdateRank(Rank rank);
-    RankingInfo GetRankingInfo(long userNo, int topCount);
+    RankingInfo GetRankingInfo(int userNo, int topCount);
 }

@@ -14,7 +14,7 @@ public class RankingController : ControllerBase
     }
 
     // 랭킹 데이터 조회
-    [HttpGet]
+    [HttpGet("rank")]
     public ActionResult<IEnumerable<Rank>> GetRanks()
     {
         var ranks = _rankingService.GetRanks();
@@ -22,7 +22,7 @@ public class RankingController : ControllerBase
     }
 
     // 랭킹 데이터 추가 또는 업데이트
-    [HttpPost]
+    [HttpPost("rank")]
     public IActionResult UpdateRank([FromBody] Rank rank)
     {
         _rankingService.UpdateRank(rank);

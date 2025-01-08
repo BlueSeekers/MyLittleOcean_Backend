@@ -10,7 +10,7 @@ public class RankingRepository : IRankingRepository
     {
         _connectionString = connectionString;
     }
-    public long GetUserRanking(long userNo)
+    public int GetUserRanking(int userNo)
     {
         using (IDbConnection db = new MySqlConnection(_connectionString))
         {
