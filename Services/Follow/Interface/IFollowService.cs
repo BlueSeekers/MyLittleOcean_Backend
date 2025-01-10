@@ -1,5 +1,4 @@
-﻿
-using MyLittleOcean.Models.Follow;
+﻿using MyLittleOcean.Models.Follow;
 
 public interface IFollowService {
 
