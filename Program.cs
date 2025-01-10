@@ -16,7 +16,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 ConfigureServices(builder.Services, jwtKey, jwtIssuer, jwtAudience, connectionString);
 
 // 모듈 등록 (사용자 정의 서비스)
-builder.Services.AddUserModule(connectionString);
+builder.Services.AddAuthModule(connectionString);           //Auth
+builder.Services.AddFollowModule(connectionString);         //팔로우 
 
 // 애플리케이션 빌드
 var app = builder.Build();

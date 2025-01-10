@@ -1,6 +1,6 @@
 ﻿public static class AuthModule {
 
-    public static IServiceCollection AddUserModule(this IServiceCollection services, string connectionString) {
+    public static IServiceCollection AddAuthModule(this IServiceCollection services, string connectionString) {
         // Repository 등록
         services.AddScoped<IAuthRepository>(provider => new AuthRepository(connectionString));
 
