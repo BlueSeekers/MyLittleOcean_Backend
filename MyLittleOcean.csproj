@@ -22,4 +22,12 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Follow\" />
+    <Folder Include="Repository\Follow\Interface\" />
+    <Folder Include="Repository\Follow\Imple\" />
+    <Folder Include="Services\Follow\Interface\" />
+    <Folder Include="Services\Follow\Imple\" />
+  </ItemGroup>
+
 </Project>
