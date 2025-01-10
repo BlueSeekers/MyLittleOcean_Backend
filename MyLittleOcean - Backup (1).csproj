@@ -24,9 +24,13 @@
 
   <ItemGroup>
     <Folder Include="Models\Follow\" />
+    <Folder Include="Modules\User\" />
     <Folder Include="Repository\Follow\Interface\" />
     <Folder Include="Repository\Follow\Imple\" />
-    <Folder Include="Repository\NewFolder\" />
+    <Folder Include="Repository\User\Interface\" />
+    <Folder Include="Repository\User\Imple\" />
+    <Folder Include="Services\Follow\Interface\" />
+    <Folder Include="Services\Follow\Imple\" />
   </ItemGroup>
 
 </Project>
