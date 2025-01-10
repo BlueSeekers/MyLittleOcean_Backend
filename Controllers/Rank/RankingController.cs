@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("[controller]")]
-[Authorize]
+//[Authorize]
 public class RankingController : ControllerBase
 {
     private readonly IRankingService _rankingService;
@@ -15,10 +15,13 @@ public class RankingController : ControllerBase
 
     // 랭킹 데이터 조회
     [HttpGet("rank")]
-    public ActionResult<IEnumerable<Rank>> GetRanks()
+    public ActionResult<IEnumerable<Rank>> GetRanks(string gameType, int userNo)
     {
-        var ranks = _rankingService.GetRanks();
-        return Ok(ranks);
+        RankingInfoDto rankingInfo = new RankingInfoDto();
+        rankingInfo.UserRank = _rankingService.GetMyRanking(gameType, userNo);
+        rankingInfo.TodayTopRanks = _rankingService.GetDailyRanks(gameType, DateTime.Today);
+        rankingInfo.MonthTopRanks = _rankingService.GetMonthlyRanks(gameType, DateTime.Today);
+        return Ok(rankingInfo);
     }
 
     // 랭킹 데이터 추가 또는 업데이트

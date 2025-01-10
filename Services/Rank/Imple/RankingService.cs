@@ -1,81 +1,80 @@
 ﻿
+using System.Security.AccessControl;
+
 public class RankingService : IRankingService
 {
     private readonly IRankingRepository _rankingRepository;
-    private const int DEFAULT_RANK_COUNT = 100; // 기본 랭킹 조회 개수
 
     public RankingService(IRankingRepository rankingRepository)
     {
         _rankingRepository = rankingRepository;
     }
 
-    // 랭킹 데이터 조회
-    public List<Rank> GetRanks()
+    // 내 랭킹 조회
+    public Rank GetMyRanking(string gameType, int userNo)
     {
-        return _rankingRepository.GetTopRanks(DEFAULT_RANK_COUNT);
-    }
-    // 특정 개수의 랭킹 데이터 조회
-    public List<Rank> GetTopRanks(int count)
-    {
-        if (count <= 0)
-        {
-            throw new ArgumentException("Count must be greater than 0", nameof(count));
-        }
+        ValidateGameType(gameType);
+        ValidateUserNo(userNo);
 
-        return _rankingRepository.GetTopRanks(count);
+        return _rankingRepository.GetUserRanking(gameType, userNo);
     }
-    // 특정 유저의 랭킹 순위 조회
-    public int GetUserRanking(int userNo)
+    // 전체 랭킹(일간) 조회
+    public List<Rank> GetDailyRanks(string gameType, DateTime date, int count)
+    {
+        ValidateGameType(gameType);
+
+        var startDate = date.Date; // 해당일 00:00:00
+        var endDate = startDate.AddDays(1).AddSeconds(-1); // 해당일 23:59:59
+
+        return _rankingRepository.GetTopRanksByPeriod(gameType, startDate.ToString(), endDate.ToString(), count);
+    }
+    // 월별 랭킹 조회
+    public List<Rank> GetMonthlyRanks(string gameType, DateTime date, int count)
+    {
+        ValidateGameType(gameType);
+
+        var startDate = new DateTime(date.Year, date.Month, 1);
+        var endDate = startDate.AddMonths(1).AddSeconds(-1);
+
+        return _rankingRepository.GetTopRanksByPeriod(gameType, startDate.ToString(), endDate.ToString(), count);
+    }
+    // 랭킹 데이터 추가 또는 업데이트
+    public void UpdateRank(Rank rank)
+    {
+        ValidateRank(rank);
+        _rankingRepository.UpdateRank(rank);
+    }
+
+    private void ValidateGameType(string gameType)
+    {
+        if (string.IsNullOrEmpty(gameType))
+        {
+            throw new ArgumentException("GameType cannot be empty", nameof(gameType));
+        }
+    }
+
+    private void ValidateUserNo(long userNo)
     {
         if (userNo <= 0)
         {
             throw new ArgumentException("UserNo must be greater than 0", nameof(userNo));
         }
-
-        return _rankingRepository.GetUserRanking(userNo);
     }
 
-    // 랭킹 데이터 추가 또는 업데이트
-    public void UpdateRank(Rank rank)
+    private void ValidateRank(Rank rank)
     {
         if (rank == null)
         {
             throw new ArgumentNullException(nameof(rank));
         }
 
-        if (rank.UserNo <= 0)
-        {
-            throw new ArgumentException("UserNo must be greater than 0", nameof(rank));
-        }
+        ValidateGameType(rank.GameType);
+        ValidateUserNo(rank.UserNo);
 
         if (rank.RankValue < 0)
         {
             throw new ArgumentException("RankValue cannot be negative", nameof(rank));
         }
-
-        _rankingRepository.UpdateRank(rank);
-    }
-    // 랭킹 정보 조회 (유저의 순위와 상위 랭킹 리스트)
-    public RankingInfoDto GetRankingInfo(int userNo, int topCount = DEFAULT_RANK_COUNT)
-    {
-        if (userNo <= 0)
-        {
-            throw new ArgumentException("UserNo must be greater than 0", nameof(userNo));
-        }
-
-        if (topCount <= 0)
-        {
-            throw new ArgumentException("TopCount must be greater than 0", nameof(topCount));
-        }
-
-        var userRank = GetUserRanking(userNo);
-        var topRanks = GetTopRanks(topCount);
-
-        return new RankingInfoDto
-        {
-            UserRank = userRank,
-            TopRanks = topRanks
-        };
     }
 }
 
