@@ -6,33 +6,33 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// È¯°æ º¯¼ö ¹× ¼³Á¤ °ª È®ÀÎ
+// È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È®ï¿½ï¿½
 var jwtKey = builder.Configuration["JwtSettings:Secret"] ?? throw new ArgumentNullException("JWT Secret is not configured.");
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? throw new ArgumentNullException("JWT Issuer is not configured.");
 var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? throw new ArgumentNullException("JWT Audience is not configured.");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new ArgumentNullException("Connection string is not configured.");
 
-// ¼­ºñ½º µî·Ï
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 ConfigureServices(builder.Services, jwtKey, jwtIssuer, jwtAudience, connectionString);
 
-// ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ºôµå
+// ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½
 var app = builder.Build();
 
-// ¹Ìµé¿þ¾î ±¸¼º
+// ï¿½Ìµï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 ConfigureMiddleware(app);
 
 app.Run();
 
 void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIssuer, string jwtAudience, string connectionString) {
-    // Dapper Extensions Àü¿ª ¼³Á¤
+    // Dapper Extensions ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     DapperExtensions.UseSnakeCaseToCamelCaseMapping();
 
-    // ÄÁÆ®·Ñ·¯ ¹× ±Û·Î¹ú °æ·Î ÇÁ¸®ÇÈ½º ¼³Á¤
+    // ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ ï¿½ï¿½ ï¿½Û·Î¹ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½È½ï¿½ ï¿½ï¿½ï¿½ï¿½
     services.AddControllers(options => {
         options.Conventions.Add(new GlobalRoutePrefix("api/v1"));
     });
 
-    // Swagger(OpenAPI) ¼³Á¤
+    // Swagger(OpenAPI) ï¿½ï¿½ï¿½ï¿½
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen(c => {
         c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
@@ -46,7 +46,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
             }
         });
 
-        // JWT ÀÎÁõ ¼³Á¤ Ãß°¡
+        // JWT ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
         c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
             Name = "Authorization",
             Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
@@ -74,7 +74,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
         c.EnableAnnotations();
     });
 
-    // JWT ÀÎÁõ ¼³Á¤
+    // JWT ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     var key = Encoding.UTF8.GetBytes(jwtKey);
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options => {
@@ -97,19 +97,19 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
             };
         });
 
-    // MySQL¿ë DB ¿¬°á ¼³Á¤
+    // MySQLï¿½ï¿½ DB ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
 
-    // »ç¿ëÀÚ Á¤ÀÇ ¼­ºñ½º µî·Ï
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     services.AddSingleton<LoggingService>();
     services.AddHostedService<UdpServerService>();
 
-    // »ç¿ëÀÚ Á¤ÀÇ ¸ðµâ µî·Ï
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     services.AddAuthModule(connectionString);           //Auth
-    services.AddFollowModule(connectionString);         //ÆÈ·Î¿ì 
+    services.AddFollowModule(connectionString);         //ï¿½È·Î¿ï¿½ 
     services.AddUserModule(connectionString);           //User
 
-    // CORS ¼³Á¤
+    // CORS ï¿½ï¿½ï¿½ï¿½
     services.AddCors(options => {
         options.AddDefaultPolicy(policy => {
             policy.WithOrigins("http://localhost:3000")
@@ -118,7 +118,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
         });
     });
 
-    // ¶ó¿ìÆÃ ¼³Á¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     services.Configure<RouteOptions>(options => {
         options.LowercaseUrls = true;
         options.AppendTrailingSlash = false;
@@ -126,28 +126,28 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
 }
 
 void ConfigureMiddleware(WebApplication app) {
-    // »ç¿ëÀÚ Á¤ÀÇ ¿¡·¯ ÇÚµé¸µ ¹Ìµé¿þ¾î Ãß°¡
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Úµé¸µ ï¿½Ìµï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
-    // °³¹ß È¯°æ¿¡¼­ Swagger È°¼ºÈ­
+    // ï¿½ï¿½ï¿½ï¿½ È¯ï¿½æ¿¡ï¿½ï¿½ Swagger È°ï¿½ï¿½È­
     if (app.Environment.IsDevelopment()) {
         app.UseSwagger();
         app.UseSwaggerUI(c => {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyLIO API V1");
-            c.RoutePrefix = string.Empty; // Swagger UI¸¦ ±âº» °æ·Î¿¡ Ç¥½Ã
+            c.RoutePrefix = string.Empty; // Swagger UIï¿½ï¿½ ï¿½âº» ï¿½ï¿½Î¿ï¿½ Ç¥ï¿½ï¿½
         });
     }
 
-    // HTTPS ¸®´ÙÀÌ·º¼Ç
+    // HTTPS ï¿½ï¿½ï¿½ï¿½ï¿½Ì·ï¿½ï¿½ï¿½
     app.UseHttpsRedirection();
 
-    // CORS È°¼ºÈ­
+    // CORS È°ï¿½ï¿½È­
     app.UseCors();
 
-    // ÀÎÁõ ¹× ±ÇÇÑ ºÎ¿©
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î¿ï¿½
     app.UseAuthentication();
     app.UseAuthorization();
 
-    // ÄÁÆ®·Ñ·¯ ¸ÅÇÎ
+    // ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ ï¿½ï¿½ï¿½ï¿½
     app.MapControllers();
 }
