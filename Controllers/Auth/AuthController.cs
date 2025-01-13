@@ -6,7 +6,6 @@ using System.Text;
 
 [ApiController]
 [Route("[controller]")]
-[ApiExplorerSettings(GroupName = "Auth")]
 public class AuthController : ControllerBase {
     private readonly string _jwtKey = "blueseekers_0703_my_little_ocean_story"; // JWT 비밀 키
     private readonly string _issuer = "http://localhost:7122";

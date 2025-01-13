@@ -15,11 +15,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // 서비스 등록
 ConfigureServices(builder.Services, jwtKey, jwtIssuer, jwtAudience, connectionString);
 
-// 모듈 등록 (사용자 정의 서비스)
-builder.Services.AddAuthModule(connectionString);           //Auth
-builder.Services.AddFollowModule(connectionString);         //팔로우 
-builder.Services.AddUserModule(connectionString);           //User
-
 // 애플리케이션 빌드
 var app = builder.Build();
 
@@ -29,6 +24,9 @@ ConfigureMiddleware(app);
 app.Run();
 
 void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIssuer, string jwtAudience, string connectionString) {
+    // Dapper Extensions 전역 설정
+    DapperExtensions.UseSnakeCaseToCamelCaseMapping();
+
     // 컨트롤러 및 글로벌 경로 프리픽스 설정
     services.AddControllers(options => {
         options.Conventions.Add(new GlobalRoutePrefix("api/v1"));
@@ -58,10 +56,13 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
             Description = "Enter 'Bearer' followed by your token in the text box below.\nExample: Bearer <AccessToken>"
         });
 
-        c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
+        c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
             {
-                new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                    Reference = new Microsoft.OpenApi.Models.OpenApiReference {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                    {
                         Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
                         Id = "Bearer"
                     }
@@ -70,7 +71,6 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
             }
         });
 
-        // Enable Swagger Annotations
         c.EnableAnnotations();
     });
 
@@ -100,9 +100,14 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
     // MySQL용 DB 연결 설정
     services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
 
-    // 기타 서비스 등록
+    // 사용자 정의 서비스 등록
     services.AddSingleton<LoggingService>();
     services.AddHostedService<UdpServerService>();
+
+    // 사용자 정의 모듈 등록
+    services.AddAuthModule(connectionString);           //Auth
+    services.AddFollowModule(connectionString);         //팔로우 
+    services.AddUserModule(connectionString);           //User
 
     // CORS 설정
     services.AddCors(options => {

@@ -5,7 +5,6 @@ using MyLittleOcean.Models.Follow;
 
 [ApiController]
 [Route("[controller]")]
-[ApiExplorerSettings(GroupName = "Follow")]
 [Authorize]
 public class FollowController : ControllerBase {
     private readonly IFollowService _followService;

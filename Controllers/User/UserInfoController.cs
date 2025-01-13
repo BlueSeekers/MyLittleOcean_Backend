@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("[controller]")]
-[ApiExplorerSettings(GroupName = "UserInfo")]
+[Authorize]
 public class UserInfoController : ControllerBase {
     private IUserInfoService _userInfoService;
     public UserInfoController(IUserInfoService userInfoService) {
@@ -21,7 +22,7 @@ public class UserInfoController : ControllerBase {
             return userFullData == null ? NotFound() : Ok(userFullData);
         }
         catch (Exception e) {
-            return StatusCode(500, new { message = "Failed to Geu User Data" });
+            return StatusCode(500, new { message = "Failed to Get User Data" });
         }
     }
 
@@ -35,7 +36,7 @@ public class UserInfoController : ControllerBase {
             return userFullData == null ? NotFound() : Ok(userFullData);
         }
         catch (Exception e) {
-            return StatusCode(500, new { message = "Failed to Geu User Data" });
+            return StatusCode(500, new { message = "Failed to Get User Data" });
         }
     }
 }

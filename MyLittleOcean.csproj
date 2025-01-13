@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Repository\NewFolder\**" />
+    <Content Remove="Repository\NewFolder\**" />
+    <EmbeddedResource Remove="Repository\NewFolder\**" />
+    <None Remove="Repository\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
     <PackageReference Include="Dapper" Version="2.1.35" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
@@ -26,7 +33,6 @@
     <Folder Include="Models\Follow\" />
     <Folder Include="Repository\Follow\Interface\" />
     <Folder Include="Repository\Follow\Imple\" />
-    <Folder Include="Repository\NewFolder\" />
   </ItemGroup>
 
 </Project>

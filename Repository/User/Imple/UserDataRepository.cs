@@ -12,8 +12,9 @@ public class UserDataRepository : IUserDataRepository {
     //유저 No로 UserData 조회
     public UserData? GetUserDataByNo(int userNo) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @"SELECT coin_amount, token_amount, update_date " +
-                "FROM tb_user_data data" +
+            string sql = @"SELECT data.coin_amount, data.token_amount, data.update_date " +
+                "FROM tb_user_data data " +
+                "INNER JOIN tb_user_info info ON data.user_no = info.user_no " +
                 "WHERE info.user_no = @userNo";
             return db.QueryFirstOrDefault<UserData>(sql, new { userNo });
         }
@@ -22,9 +23,9 @@ public class UserDataRepository : IUserDataRepository {
     //유저 ID로 UserData 조회
     public UserData? GetUserDataById(string userId) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @"SELECT coin_amount, token_amount, update_date " +
-                "FROM tb_user_data data" +
-                "INNER JOIN tb_user_info info on data.user_no = info.user_no" +
+            string sql = @"SELECT data.coin_amount, data.token_amount, data.update_date " +
+                "FROM tb_user_data data " +
+                "INNER JOIN tb_user_info info ON data.user_no = info.user_no " +
                 "WHERE info.user_id = @userId";
             return db.QueryFirstOrDefault<UserData>(sql, new { userId });
         }

@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("[controller]")]
-[ApiExplorerSettings(GroupName = "UserData")]
+[Authorize]
 public class UserDataController :ControllerBase {
     
 
