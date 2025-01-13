@@ -1,6 +1,6 @@
 ﻿public interface IRankingRepository
 {
-    Rank? GetUserRanking(string gameType, int userNo);
-    List<Rank> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN);
-    void UpdateRank(Rank rank);
+    RankDetail? GetUserRanking(string gameType, int userNo);
+    List<RankDetail> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN);
+    void UpdateRank(RankDetail rank);
 }

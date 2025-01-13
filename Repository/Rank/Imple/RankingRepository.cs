@@ -2,6 +2,7 @@
 using Dapper;
 using System.Data;
 using System.Security.AccessControl;
+using System.Collections.Generic;
 
 public class RankingRepository : IRankingRepository
 {
@@ -12,34 +13,36 @@ public class RankingRepository : IRankingRepository
         _connectionString = connectionString;
     }
     // 특정 유저의 랭킹 순위 조회
-    public Rank? GetUserRanking(string gameType, int userNo)
+    public RankDetail? GetUserRanking(string gameType, int userNo)
     {
         using (IDbConnection db = new MySqlConnection(_connectionString))
         {
-            var query = @"   
-            SELECT * 
-            FROM tb_rank               
-            WHERE game_type = @GameType 
-            AND user_no = @UserNo";
+            var query = @"
+            SELECT r.*, u.user_name
+            FROM tb_rank r
+            LEFT JOIN mylio.tb_user_info u ON r.user_no = u.user_no
+            WHERE r.game_type = @GameType
+            AND r.user_no = @UserNo";
 
-            var rank = db.QuerySingleOrDefault<Rank>(query, new { GameType = gameType, UserNo = userNo });
+            var rank = db.QuerySingleOrDefault<RankDetail>(query, new { GameType = gameType, UserNo = userNo });
             return rank;
         }
     }
     // 기간별 상위 랭킹 조회
-    public List<Rank> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN)
+    public List<RankDetail> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN)
     {
         using (IDbConnection db = new MySqlConnection(_connectionString))
         {
             string sql = @"
-                SELECT rank_no, game_type, user_no, rank_value, create_date 
-                FROM tb_rank 
-                WHERE game_type = @GameType
-                AND create_date BETWEEN @StartDate AND @EndDate
-                ORDER BY rank_value DESC 
+                SELECT r.rank_no, r.game_type, r.user_no, r.rank_value, r.create_date, u.user_name
+                FROM tb_rank r
+                LEFT JOIN mylio.tb_user_info u ON r.user_no = u.user_no
+                WHERE r.game_type = @GameType
+                AND r.create_date BETWEEN @StartDate AND @EndDate
+                ORDER BY r.rank_value DESC
                 LIMIT @TopN";
 
-            return db.Query<Rank>(sql, new
+            return db.Query<RankDetail>(sql, new
             {
                 GameType = gameType,
                 StartDate = startDate,
@@ -49,7 +52,7 @@ public class RankingRepository : IRankingRepository
         }
     }
     // 랭킹 데이터 저장/수정
-    public void UpdateRank(Rank rank)
+    public void UpdateRank(RankDetail rank)
     {
         using (IDbConnection db = new MySqlConnection(_connectionString))
         {
