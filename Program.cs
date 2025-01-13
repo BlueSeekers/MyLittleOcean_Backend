@@ -6,33 +6,33 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ȯ�� ���� �� ���� �� Ȯ��
+// 환경 변수 및 설정 값 확인
 var jwtKey = builder.Configuration["JwtSettings:Secret"] ?? throw new ArgumentNullException("JWT Secret is not configured.");
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? throw new ArgumentNullException("JWT Issuer is not configured.");
 var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? throw new ArgumentNullException("JWT Audience is not configured.");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new ArgumentNullException("Connection string is not configured.");
 
-// ���� ���
+// 서비스 등록
 ConfigureServices(builder.Services, jwtKey, jwtIssuer, jwtAudience, connectionString);
 
-// ���ø����̼� ���
+// 애플리케이션 빌드
 var app = builder.Build();
 
-// �̵���� ����
+// 미들웨어 구성
 ConfigureMiddleware(app);
 
 app.Run();
 
 void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIssuer, string jwtAudience, string connectionString) {
-    // Dapper Extensions ���� ����
+    // Dapper Extensions 추가 (snake to camel)
     DapperExtensions.UseSnakeCaseToCamelCaseMapping();
 
-    // ��Ʈ�ѷ� �� �۷ι� ��� �����Ƚ� ����
+    // 컨트롤러 및 글로벌 경로 프리픽스 설정
     services.AddControllers(options => {
         options.Conventions.Add(new GlobalRoutePrefix("api/v1"));
     });
 
-    // Swagger(OpenAPI) ����
+    // Swagger(OpenAPI) 설정
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen(c => {
         c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {
@@ -46,7 +46,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
             }
         });
 
-        // JWT ���� ���� �߰�
+        // JWT 인증 설정 추가
         c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
             Name = "Authorization",
             Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
@@ -74,7 +74,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
         c.EnableAnnotations();
     });
 
-    // JWT ���� ����
+    // JWT 인증 설정
     var key = Encoding.UTF8.GetBytes(jwtKey);
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options => {
@@ -100,16 +100,17 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
     // MySQL�� DB ���� ����
     services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
 
-    // ����� ���� ���� ���
+    // MySQL용 DB 연결 설정
     services.AddSingleton<LoggingService>();
     services.AddHostedService<UdpServerService>();
 
-    // ����� ���� ��� ���
-    services.AddAuthModule(connectionString);           //Auth
-    services.AddFollowModule(connectionString);         //�ȷο� 
-    services.AddUserModule(connectionString);           //User
+    // 기타 서비스 등록
+    services.AddAuthModule(connectionString);               //Auth
+    services.AddFollowModule(connectionString);             //Fllow
+    services.AddRankingModule(connectionString);            //Rank
+    services.AddUserModule(connectionString);               //User
 
-    // CORS ����
+    // CORS 설정
     services.AddCors(options => {
         options.AddDefaultPolicy(policy => {
             policy.WithOrigins("http://localhost:3000")
@@ -118,7 +119,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
         });
     });
 
-    // ����� ����
+    // 라우팅 설정
     services.Configure<RouteOptions>(options => {
         options.LowercaseUrls = true;
         options.AppendTrailingSlash = false;
@@ -126,10 +127,10 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
 }
 
 void ConfigureMiddleware(WebApplication app) {
-    // ����� ���� ���� �ڵ鸵 �̵���� �߰�
+    // 사용자 정의 에러 핸들링 미들웨어 추가
     app.UseMiddleware<ErrorHandlingMiddleware>();
 
-    // ���� ȯ�濡�� Swagger Ȱ��ȭ
+    // 개발 환경에서 Swagger 활성화
     if (app.Environment.IsDevelopment()) {
         app.UseSwagger();
         app.UseSwaggerUI(c => {
@@ -138,16 +139,16 @@ void ConfigureMiddleware(WebApplication app) {
         });
     }
 
-    // HTTPS �����̷���
+    // HTTPS 리다이렉션
     app.UseHttpsRedirection();
 
-    // CORS Ȱ��ȭ
+    // CORS 활성화
     app.UseCors();
 
-    // ���� �� ���� �ο�
+    // 인증 및 권한 부여
     app.UseAuthentication();
     app.UseAuthorization();
 
-    // ��Ʈ�ѷ� ����
+    // 컨트롤러 매핑
     app.MapControllers();
 }
