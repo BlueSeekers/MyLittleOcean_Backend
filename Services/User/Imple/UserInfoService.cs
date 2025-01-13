@@ -14,14 +14,19 @@
     /// </summary>
     /// <param name="id">UserId</param>
     /// <returns>UserFullData<UserInfo, UserData></returns>
-    public UserFullData? GetUserFullData(string id) {
+    public UserFullData? GetUserFullDataById(string id) {
         UserFullData userFullData = new UserFullData();
-        
-        userFullData.UserInfo = _userInfoRepository.getUserInfo(id);
-        //TODO: NULL 예외처리
 
-        userFullData.UserData = _userDataRepository.GetUserData(id);
-        //TODO: NULL 예외처리
+        UserInfo info = new UserInfo();
+        UserData data = new UserData();
+        info = _userInfoRepository.GetUserInfoById(id);
+        if (info != null) {
+            data = _userDataRepository.GetUserDataById(id);
+            if (data != null) {
+                userFullData.UserInfo = info;
+                userFullData.UserData = data;   
+            }
+        }
 
         return userFullData;
     }
@@ -31,13 +36,21 @@
     /// </summary>
     /// <param name="no">UserNo</param>
     /// <returns>UserFullData<UserInfo, UserData></returns>
-    public UserFullData? GetUserFullData(int no) {
+    public UserFullData? GetUserFullDataByNo(int no) {
         UserFullData userFullData = new UserFullData();
-        userFullData.UserInfo = _userInfoRepository.getUserInfo(no);
-        //TODO: NULL 예외처리
-        userFullData.UserData = _userDataRepository.GetUserData(no);
-        //TODO: NULL 예외처리
 
+        UserInfo info = new UserInfo();
+        UserData data = new UserData();
+
+        info = _userInfoRepository.GetUserInfoByNo(no);
+        if (info != null) {
+            data = _userDataRepository.GetUserDataByNo(no);
+            if (data != null){
+                userFullData.UserInfo = info;
+                userFullData.UserData = data;
+            }
+        }
         return userFullData;
     }
+
 }

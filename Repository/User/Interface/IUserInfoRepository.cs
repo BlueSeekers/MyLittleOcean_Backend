@@ -1,6 +1,6 @@
 ﻿
 public interface IUserInfoRepository {
-    UserInfo getUserInfo(string id);
-    UserInfo getUserInfo(int no);
+    UserInfo GetUserInfoById(string id);
+    UserInfo GetUserInfoByNo(int no);
 
 }

@@ -1,5 +1,5 @@
 ﻿public interface IUserDataRepository {
 
-    UserData GetUserData(string userid);
-    UserData GetUserData(int userNo);
+    UserData GetUserDataById(string userid);
+    UserData GetUserDataByNo(int userNo);
 }

@@ -1,8 +1,6 @@
 ﻿public interface IUserInfoService {
 
-    UserFullData GetUserFullData(string id);
+    UserFullData GetUserFullDataById(string id);
 
-    UserFullData GetUserFullData(int no);
-
-
+    UserFullData GetUserFullDataByNo(int userNo);
 }

@@ -9,7 +9,7 @@ public class UserInfoController : ControllerBase {
         _userInfoService = userInfoService;
     }
 
-    [HttpGet("get")]
+    [HttpGet("get/byID")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public IActionResult GetUserFullDataByID([FromQuery] string userId) {
@@ -17,7 +17,21 @@ public class UserInfoController : ControllerBase {
             return BadRequest("BadRequest Data");
         }
         try {
-            UserFullData userFullData = _userInfoService.GetUserFullData(userId);
+            UserFullData userFullData = _userInfoService.GetUserFullDataById(userId);
+            return userFullData == null ? NotFound() : Ok(userFullData);
+        }
+        catch (Exception e) {
+            return StatusCode(500, new { message = "Failed to Geu User Data" });
+        }
+    }
+
+
+    [HttpGet("get/byNo")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public IActionResult GetUserFullDataByNo([FromQuery] int userNo) {
+        try {
+            UserFullData userFullData = _userInfoService.GetUserFullDataByNo(userNo);
             return userFullData == null ? NotFound() : Ok(userFullData);
         }
         catch (Exception e) {
