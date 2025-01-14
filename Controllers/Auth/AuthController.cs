@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -11,10 +12,18 @@ public class AuthController : ControllerBase {
     private readonly string _issuer = "http://localhost:7122";
     private readonly string _audience = "http://localhost:7122";
 
-    private readonly IAuthService _userService;
+    //private readonly IAuthService _userService;
 
-    public AuthController(IAuthService userService) {
-        _userService = userService;
+    //public AuthController(IAuthService userService) {
+    //    _userService = userService;
+    //}              
+    private readonly IUserRepository _userRepository;
+    private readonly IConfiguration _configuration;
+
+    public AuthController(IUserRepository userRepository, IConfiguration configuration)
+    {
+        _userRepository = userRepository;
+        _configuration = configuration;
     }
 
     [HttpPost("login")]
@@ -70,6 +79,60 @@ public class AuthController : ControllerBase {
         }
     }
 
+
+    [HttpPost("google-login")]
+    public async Task<IActionResult> GoogleLogin([FromBody] SocialLoginRequest request)
+    {
+        try
+        {
+            var payload = await ValidateGoogleToken(request.IdToken);
+
+            // DB에 저장
+            var saved = await _userRepository.AddUserAsync(
+                payload.Email,        // UserId로 사용
+                payload.Name,         // UserName
+                payload.Email,        // UserEmail
+                "google",            // Provider
+                payload.Subject      // ProviderId
+            );
+
+            if (!saved)
+            {
+                return StatusCode(500, "Failed to save user");
+            }
+
+            // 토큰 생성
+            var accessToken = GenerateToken(payload.Email, TimeSpan.FromMinutes(30));
+            return Ok(new { AccessToken = accessToken });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+    private async Task<GoogleJsonWebSignature.Payload> ValidateGoogleToken(string idToken)
+    {
+        // 테스트용
+        //return new GoogleJsonWebSignature.Payload
+        //{
+        //    Email = "test@example.com",
+        //    Name = "Test User",
+        //    Subject = "test123" // Google의 고유 ID 역할
+        //};
+        var settings = new GoogleJsonWebSignature.ValidationSettings()
+        {
+            Audience = new List<string> { _configuration["Authentication:Google:ClientId"] }
+        };
+
+        try
+        {
+            return await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+        }
+        catch (InvalidJwtException)
+        {
+            throw new Exception("Invalid Google token.");
+        }
+    }
     private string GenerateToken(string username, TimeSpan validFor) {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtKey);
@@ -89,21 +152,21 @@ public class AuthController : ControllerBase {
         return tokenHandler.WriteToken(token);
     }
 
-    [HttpPost("signup")]
-    public IActionResult CreateUser([FromBody] AuthCreateDto userCreateDto) {
-        if (userCreateDto.userId.IsNullOrEmpty()) {
-            return BadRequest("No information exists");
-        }
-        try {
-            int createUser = _userService.CreateUser(userCreateDto);
-            if (createUser > 0)
-                return Ok(new { message = "User created successfully." });
-            else
-                return StatusCode(500, new { message = "Failed to create user." });
-        }
-        catch (Exception e) {
-            return BadRequest(new { error = e.Message });
-        }
-    }
+    //[HttpPost("signup")]
+    //public IActionResult CreateUser([FromBody] AuthCreateDto userCreateDto) {
+    //    if (userCreateDto.userId.IsNullOrEmpty()) {
+    //        return BadRequest("No information exists");
+    //    }
+    //    try {
+    //        int createUser = _userService.CreateUser(userCreateDto);
+    //        if (createUser > 0)
+    //            return Ok(new { message = "User created successfully." });
+    //        else
+    //            return StatusCode(500, new { message = "Failed to create user." });
+    //    }
+    //    catch (Exception e) {
+    //        return BadRequest(new { error = e.Message });
+    //    }
+    //}
 
 }
