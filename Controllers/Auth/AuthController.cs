@@ -89,11 +89,9 @@ public class AuthController : ControllerBase {
 
             // DB에 저장
             var saved = await _userRepository.AddUserAsync(
-                payload.Email,        // UserId로 사용
+                payload.Subject,      // UserId
                 payload.Name,         // UserName
-                payload.Email,        // UserEmail
-                "google",            // Provider
-                payload.Subject      // ProviderId
+                "google"            // Provider
             );
 
             if (!saved)

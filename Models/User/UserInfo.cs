@@ -10,7 +10,6 @@ public class UserInfo {
     private string? lockDate;
     private string? lastPwdDate;
     private string provider;
-    private string providerId;
     private string createDate;
     private string updateDate;
 
@@ -38,9 +37,6 @@ public class UserInfo {
 
     [SwaggerSchema("제공자")]
     public string Provider { get => provider; set => provider = value; }     
-
-    [SwaggerSchema("제공자 ID")]
-    public string ProviderId { get => providerId; set => providerId = value; }
 
     [SwaggerSchema("생성일자")]
     public string CreateDate { get => createDate; set => createDate = value; }
