@@ -10,7 +10,7 @@ public class UserInfoController : ControllerBase {
         _userInfoService = userInfoService;
     }
 
-    [HttpGet("get/byID")]
+    [HttpGet("get/id")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public IActionResult GetUserFullDataByID([FromQuery] string userId) {
@@ -27,7 +27,7 @@ public class UserInfoController : ControllerBase {
     }
 
 
-    [HttpGet("get/byNo")]
+    [HttpGet("get/no")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public IActionResult GetUserFullDataByNo([FromQuery] int userNo) {

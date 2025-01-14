@@ -8,7 +8,7 @@ public class UserDataRepository : IUserDataRepository {
     public UserDataRepository(string connectionString) {
         _connectionString = connectionString;
     }
-    
+
     //유저 No로 UserData 조회
     public UserData? GetUserDataByNo(int userNo) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
@@ -31,4 +31,45 @@ public class UserDataRepository : IUserDataRepository {
         }
     }
 
+    //UserNo로 Coin 사용
+    public int UseCoinByNo(UseDataDto useDataDto) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @"UPDATE tb_user_data SET" +
+                " coin_amount = coin_amount - @amount" +
+                " WHERE data.user_no = @userNo";
+            int rowsAffected = db.Execute(sql, useByNoDto);
+            return rowsAffected > 0 ? 1 : 0;
+        }
+    }
+
+    //UserID로 Coin 사용
+    public int UseCoinByID(UseDataDto useDataDto) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @" UPDATE tb_user_data SET coin_amount = coin_amount - @amount" +
+                        " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
+            int rowsAffected = db.Execute(sql, useByIdDto);
+            return rowsAffected > 0 ? 1 : 0;
+        }
+    }
+
+    //UserNo로 Token 사용
+    public int UseTokenByNo(UseDataDto useDataDto) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @"UPDATE tb_user_data SET" +
+                " token_amount = token_amount - @amount" +
+                " WHERE data.user_no = @userNo";
+            int rowsAffected = db.Execute(sql, useByNoDto);
+            return rowsAffected > 0 ? 1 : 0;
+        }
+    }
+
+    //UserID로 Token 사용
+    public int UseTokenByID(UseDataDto useDataDto) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @" UPDATE tb_user_data SET token_amount = token_amount - @amount" +
+                        " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
+            int rowsAffected = db.Execute(sql, useByIdDto);
+            return rowsAffected > 0 ? 1 : 0;
+        }
+    }
 }
