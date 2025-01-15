@@ -165,7 +165,6 @@ public class AuthController : ControllerBase {
     {
         using (var client = new HttpClient())
         {
-            // GPGS는 다른 엔드포인트 사용
             var url = $"https://www.googleapis.com/games/v1/applications/{_configuration["Authentication:GPGS:AppId"]}/verify/";
 
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
