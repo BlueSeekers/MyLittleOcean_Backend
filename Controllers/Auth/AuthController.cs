@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 
@@ -100,7 +101,7 @@ public class AuthController : ControllerBase {
             }
 
             // 토큰 생성
-            var accessToken = GenerateToken(payload.Email, TimeSpan.FromMinutes(30));
+            var accessToken = GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
             return Ok(new { AccessToken = accessToken });
         }
         catch (Exception ex)
@@ -108,14 +109,43 @@ public class AuthController : ControllerBase {
             return BadRequest(new { error = ex.Message });
         }
     }
+    [HttpPost("gpgs-login")]
+    public async Task<IActionResult> GpgsLogin([FromBody] SocialLoginRequest request)
+    {
+        try
+        {
+            var payload = await ValidateGpgsToken(request.IdToken);
+
+            // DB에 저장
+            var saved = await _userRepository.AddUserAsync(
+                payload.PlayerId,      // UserId
+                payload.Name,         // UserName
+                "google_play_games"   // Provider
+            );
+
+            if (!saved)
+            {
+                return StatusCode(500, "Failed to save user");
+            }
+
+            // 토큰 생성
+            var accessToken = GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
+            return Ok(new { AccessToken = accessToken });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     private async Task<GoogleJsonWebSignature.Payload> ValidateGoogleToken(string idToken)
     {
         // 테스트용
         //return new GoogleJsonWebSignature.Payload
         //{
         //    Email = "test@example.com",
-        //    Name = "Test User",
-        //    Subject = "test123" // Google의 고유 ID 역할
+        //    Name = "Test User" + idToken,
+        //    Subject = "test123" + idToken // Google의 고유 ID 역할
         //};
         var settings = new GoogleJsonWebSignature.ValidationSettings()
         {
@@ -129,6 +159,25 @@ public class AuthController : ControllerBase {
         catch (InvalidJwtException)
         {
             throw new Exception("Invalid Google token.");
+        }
+    }
+    private async Task<PlayGamesPayload> ValidateGpgsToken(string idToken)
+    {
+        using (var client = new HttpClient())
+        {
+            // GPGS는 다른 엔드포인트 사용
+            var url = $"https://www.googleapis.com/games/v1/applications/{_configuration["Authentication:GPGS:AppId"]}/verify/";
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+
+            var response = await client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception("Invalid GPGS token");
+            }
+
+            var content = await response.Content.ReadFromJsonAsync<PlayGamesPayload>();
+            return content;
         }
     }
     private string GenerateToken(string username, TimeSpan validFor) {

@@ -23,14 +23,14 @@ public class UserRepository : IUserRepository
                     user_name,
                     account_locked, 
                     provider,
-                    create_date,
+                    create_date
                 ) VALUES (   
                     NULL,
                     @UserId,
                     @UserName,
                     false,
                     @Provider,
-                    NOW(),
+                    NOW()
                 )";
 
             var result = await connection.ExecuteAsync(query, new
