@@ -81,60 +81,110 @@ public class AuthController : ControllerBase {
     }
 
 
-    [HttpPost("google-login")]
+    [HttpPost("google/login")]
     public async Task<IActionResult> GoogleLogin([FromBody] SocialLoginRequest request)
     {
+        // 1. 입력값 검증
+        if (string.IsNullOrEmpty(request.IdToken))
+        {
+            return BadRequest(new { error = "IdToken is required" });
+        }
+
+        // 2. Google 토큰 검증
+        GoogleJsonWebSignature.Payload payload;
         try
         {
-            var payload = await ValidateGoogleToken(request.IdToken);
+            payload = await ValidateGoogleToken(request.IdToken);
+        }
+        catch (Exception ex) when (ex is InvalidJwtException || ex is ArgumentException)
+        {
+            return BadRequest(new { error = "Invalid token" });
+        }
 
-            // DB에 저장
-            var saved = await _userRepository.AddUserAsync(
-                payload.Subject,      // UserId
-                payload.Name,         // UserName
-                "google"            // Provider
+        // 3. DB 저장
+        bool saved;
+        try
+        {
+            saved = await _userRepository.AddUserAsync(
+                payload.Subject,  // UserId
+                payload.Name,     // UserName
+                "google"          // Provider
             );
+        }
+        catch (Exception)
+        {
+            // DB 예외는 로깅하고 500 에러 반환
+            //_logger.LogError($"Failed to save user: {payload.Subject}");
+            return StatusCode(500, new { error = "Internal server error" });
+        }
 
-            if (!saved)
-            {
-                return StatusCode(500, "Failed to save user");
-            }
+        if (!saved)
+        {
+            return StatusCode(500, new { error = "Failed to save user" });
+        }
 
-            // 토큰 생성
+        // 4. 토큰 생성 및 반환
+        try
+        {
             var accessToken = GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
             return Ok(new { AccessToken = accessToken });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return BadRequest(new { error = ex.Message });
+            //_logger.LogError($"Failed to generate token for user: {payload.Subject}");
+            return StatusCode(500, new { error = "Failed to generate token" });
         }
     }
-    [HttpPost("gpgs-login")]
+    [HttpPost("gpgs/login")]
     public async Task<IActionResult> GpgsLogin([FromBody] SocialLoginRequest request)
     {
+        // 1. 입력값 검증
+        if (string.IsNullOrEmpty(request.IdToken))
+        {
+            return BadRequest(new { error = "IdToken is required" });
+        }
+
+        // 2. GPGS 토큰 검증
+        PlayGamesPayload payload;
         try
         {
-            var payload = await ValidateGpgsToken(request.IdToken);
+            payload = await ValidateGpgsToken(request.IdToken);
+        }
+        catch (HttpRequestException)
+        {
+            return BadRequest(new { error = "Failed to verify token" });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Token validation error" });
+        }
 
-            // DB에 저장
-            var saved = await _userRepository.AddUserAsync(
-                payload.PlayerId,      // UserId
+        // 3. DB 저장
+        bool saved;
+        try
+        {
+            saved = await _userRepository.AddUserAsync(
+                payload.PlayerId,     // UserId
                 payload.Name,         // UserName
                 "google_play_games"   // Provider
             );
+        }
+        catch (Exception)
+        {
+            //_logger.LogError($"Failed to save user: {payload.PlayerId}");
+            return StatusCode(500, new { error = "Internal server error" });
+        }
 
-            if (!saved)
-            {
-                return StatusCode(500, "Failed to save user");
-            }
-
-            // 토큰 생성
+        // 4. 토큰 생성 및 반환
+        try
+        {
             var accessToken = GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
             return Ok(new { AccessToken = accessToken });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return BadRequest(new { error = ex.Message });
+            //_logger.LogError($"Failed to generate token for user: {payload.PlayerId}");
+            return StatusCode(500, new { error = "Failed to generate token" });
         }
     }
 
@@ -147,37 +197,42 @@ public class AuthController : ControllerBase {
         //    Name = "Test User" + idToken,
         //    Subject = "test123" + idToken // Google의 고유 ID 역할
         //};
+        if (string.IsNullOrEmpty(idToken))
+        {
+            throw new ArgumentException("Token cannot be null or empty", nameof(idToken));
+        }
+
         var settings = new GoogleJsonWebSignature.ValidationSettings()
         {
             Audience = new List<string> { _configuration["Authentication:Google:ClientId"] }
         };
 
-        try
-        {
-            return await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
-        }
-        catch (InvalidJwtException)
+        var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+        if (payload == null)
         {
             throw new Exception("Invalid Google token.");
         }
+
+        return payload;
     }
+    private readonly HttpClient _httpClient = new HttpClient();
     private async Task<PlayGamesPayload> ValidateGpgsToken(string idToken)
     {
-        using (var client = new HttpClient())
+        var url = $"https://www.googleapis.com/games/v1/applications/{_configuration["Authentication:GPGS:AppId"]}/verify/";
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
+
+        var response = await _httpClient.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
         {
-            var url = $"https://www.googleapis.com/games/v1/applications/{_configuration["Authentication:GPGS:AppId"]}/verify/";
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
-
-            var response = await client.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception("Invalid GPGS token");
-            }
-
-            var content = await response.Content.ReadFromJsonAsync<PlayGamesPayload>();
-            return content;
+            throw new Exception("Invalid GPGS token");
         }
+
+        var content = await response.Content.ReadFromJsonAsync<PlayGamesPayload>();
+        if (content == null)
+        {
+            throw new Exception("Failed to parse GPGS token payload");
+        }
+        return content;
     }
     private string GenerateToken(string username, TimeSpan validFor) {
         var tokenHandler = new JwtSecurityTokenHandler();
