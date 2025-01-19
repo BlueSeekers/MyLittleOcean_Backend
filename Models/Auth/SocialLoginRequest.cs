@@ -1,7 +1,3 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-public class SocialLoginRequest
-{
-    [Required]
+﻿public class SocialLoginRequest {
     public string IdToken { get; set; }
 }
