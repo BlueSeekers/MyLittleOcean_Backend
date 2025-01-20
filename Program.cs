@@ -105,7 +105,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
     services.AddHostedService<UdpServerService>();
 
     // 기타 서비스 등록
-    services.AddAuthModule(connectionString);               //Auth
+    services.AddAuthModule(builder.Configuration);               //Auth
     services.AddFollowModule(connectionString);             //Fllow
     services.AddRankingModule(connectionString);            //Rank
     services.AddUserModule(connectionString);               //User
