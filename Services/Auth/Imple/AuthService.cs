@@ -64,20 +64,28 @@ public class AuthService : IAuthService {
         return GenerateToken(username, TimeSpan.FromMinutes(30));
     }
 
-    public async Task<string> GoogleLoginAsync(string idToken) {
+    public async Task<(string AccessToken, string RefreshToken)> GoogleLoginAsync(string idToken) {
         var payload = await ValidateGoogleToken(idToken);
-        await SaveUserAsync(payload.Subject, payload.Name, "google");
-        return GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
+        await SaveUserAsync(payload.Subject, payload.Name, payload.Email, "google");
+
+        var accessToken = GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
+        var refreshToken = GenerateToken(payload.Name, TimeSpan.FromDays(7));
+
+        return (accessToken, refreshToken);
     }
 
-    public async Task<string> GpgsLoginAsync(string idToken) {
+    public async Task<(string AccessToken, string RefreshToken)> GpgsLoginAsync(string idToken) {
         var payload = await ValidateGpgsToken(idToken);
-        await SaveUserAsync(payload.PlayerId, payload.Name, "google_play_games");
-        return GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
+        await SaveUserAsync(payload.PlayerId, payload.Name, payload.Email, "GPGS");
+
+        var accessToken = GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
+        var refreshToken = GenerateToken(payload.Name, TimeSpan.FromDays(7));
+
+        return (accessToken, refreshToken);
     }
 
-    private async Task SaveUserAsync(string userId, string userName, string provider) {
-        var saved = await _userRepository.AddUserAsync(userId, userName, provider);
+    private async Task SaveUserAsync(string userId, string userName, string userEmail, string provider) {
+        var saved = await _userRepository.AddUserAsync(userId, userName, userEmail, provider);
         if (!saved) {
             throw new Exception("Failed to save user");
         }

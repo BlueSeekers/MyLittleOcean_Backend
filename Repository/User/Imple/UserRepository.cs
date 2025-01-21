@@ -10,7 +10,7 @@ public class UserRepository : IUserRepository
         _connectionString = connectionString;
     }
 
-    public async Task<bool> AddUserAsync(string userId, string userName, string provider)
+    public async Task<bool> AddUserAsync(string userId, string userName, string userEmail, string provider)
     {
         using (var connection = new MySqlConnection(_connectionString))
         {
@@ -18,10 +18,10 @@ public class UserRepository : IUserRepository
 
             var query = @"
             INSERT INTO tb_user_info (  
-                user_no, user_id, user_name,
+                user_no, user_id, user_name, user_email,
                 account_locked, provider, create_date
             ) VALUES (   
-                NULL, @UserId, @UserName,
+                NULL, @UserId, @UserName, @UserEmail,
                 false, @Provider, NOW()
             )";
 
@@ -30,6 +30,7 @@ public class UserRepository : IUserRepository
             {
                 UserId = userId,
                 UserName = userName,
+                UserEmail = userEmail,
                 Provider = provider,
             });
 
