@@ -135,12 +135,9 @@ void ConfigureMiddleware(WebApplication app) {
         app.UseSwagger();
         app.UseSwaggerUI(c => {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyLIO API V1");
-            c.RoutePrefix = string.Empty; // Swagger UI�� �⺻ ��ο� ǥ��
+            c.RoutePrefix = string.Empty; // Swagger UI
         });
     }
-
-    // HTTPS 리다이렉션
-    app.UseHttpsRedirection();
 
     // CORS 활성화
     app.UseCors();
@@ -151,4 +148,8 @@ void ConfigureMiddleware(WebApplication app) {
 
     // 컨트롤러 매핑
     app.MapControllers();
+
+    app.MapGet("/", () => "Hello World!");
+
+    app.Run("http://0.0.0.0:5000");
 }
