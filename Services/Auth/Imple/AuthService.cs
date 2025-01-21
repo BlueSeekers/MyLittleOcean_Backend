@@ -76,6 +76,7 @@ public class AuthService : IAuthService {
 
     public async Task<(string AccessToken, string RefreshToken)> GpgsLoginAsync(string idToken) {
         var payload = await ValidateGpgsToken(idToken);
+        Console.WriteLine("id:" + payload.PlayerId + "\n" + payload);
         await SaveUserAsync(payload.PlayerId, payload.Name, payload.Email, "GPGS");
 
         var accessToken = GenerateToken(payload.Name, TimeSpan.FromMinutes(30));
