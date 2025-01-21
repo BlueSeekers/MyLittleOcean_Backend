@@ -82,4 +82,5 @@ _Compile.skip
 .css.map
 .js.map
 
-.tar
+#tar 파일 비포함
+*.tar
