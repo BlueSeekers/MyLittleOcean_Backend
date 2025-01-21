@@ -58,7 +58,7 @@ jobs:
           ls -l
           scp -o StrictHostKeyChecking=no docker-compose.server.yml $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP:/home/$DEPLOY_SERVER_USER/
 
-      # 6. 원격 서버에서 Docker Compose로 배포
+      # 7. 원격 서버에서 Docker Compose로 배포
       - name: Deploy using Docker Compose
         env:
           DEPLOY_SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
