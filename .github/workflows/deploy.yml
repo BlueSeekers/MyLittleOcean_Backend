@@ -61,6 +61,7 @@ jobs:
         env:
           DEPLOY_SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
           DEPLOY_SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
+          DEPLOY_SERVER_PORT: ${{ secrets.DEPLOY_SERVER_PORT }}
         run: |
           scp -i ~/.ssh/key.pem -o StrictHostKeyChecking=no docker-compose.server.yml \
               $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP:/home/$DEPLOY_SERVER_USER/
