@@ -76,11 +76,13 @@ public class AuthService : IAuthService {
 
     public async Task<(string AccessToken, string RefreshToken)> GpgsLoginAsync(string idToken) {
         var payload = await ValidateGpgsToken(idToken);
-        Console.WriteLine("id:" + payload.sub + "\n email:" + payload.Email);
-        await SaveUserAsync(payload.sub, payload.Email, "GPGS");
+        Console.WriteLine($"id:{payload.Sub}, email:{payload.Email}");
+        await SaveUserAsync(payload.Sub, payload.Email, "GPGS");
 
         var accessToken = GenerateToken(payload.Email, TimeSpan.FromMinutes(30));
         var refreshToken = GenerateToken(payload.Email, TimeSpan.FromDays(7));
+
+        Console.WriteLine($"ac:{accessToken}, rf:{refreshToken}");
 
         return (accessToken, refreshToken);
     }
