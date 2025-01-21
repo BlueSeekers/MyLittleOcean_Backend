@@ -63,7 +63,7 @@ jobs:
           DEPLOY_SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
           DEPLOY_SERVER_PORT: ${{ secrets.DEPLOY_SERVER_PORT }}
         run: |
-          scp -i ~/.ssh/key.pem -o StrictHostKeyChecking=no docker-compose.server.yml \
+          scp -i ~/.ssh/key.pem -P $DEPLOY_SERVER_PORT -o StrictHostKeyChecking=no docker-compose.server.yml \
               $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP:/home/$DEPLOY_SERVER_USER/
 
       # 7. 원격 서버에서 Docker Compose로 배포
@@ -71,8 +71,9 @@ jobs:
         env:
           DEPLOY_SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
           DEPLOY_SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
+          DEPLOY_SERVER_PORT: ${{ secrets.DEPLOY_SERVER_PORT }}
         run: |
-          ssh -i ~/.ssh/key.pem -o StrictHostKeyChecking=no $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP << 'EOF'
+          ssh -i ~/.ssh/key.pem -p $DEPLOY_SERVER_PORT -o StrictHostKeyChecking=no $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP << 'EOF'
           cd /home/$DEPLOY_SERVER_USER/project/back/build
           docker-compose down || true
           docker-compose pull
