@@ -75,7 +75,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/key.pem -p $DEPLOY_SERVER_PORT -o StrictHostKeyChecking=no $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP << 'EOF'
           cd /home/ubuntu/project/back/build
-          docker-compose down || true
-          docker-compose pull
-          docker-compose up -d
+          TAG=${{ github.ref_name }} ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }} docker-compose down || true
+          TAG=${{ github.ref_name }} ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }} docker-compose pull
+          TAG=${{ github.ref_name }} ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT }} docker-compose up -d
           EOF
