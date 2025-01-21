@@ -3,8 +3,8 @@ name: Build and Deploy ASP.NET Core with Docker Compose
 on:
   push:
     branches:
-      - main
-      - develop
+      - main     # main 브랜치에 푸시할 때 실행
+      - develop  # develop 브랜치에 푸시할 때 실행
 
 jobs:
   build-and-deploy:
@@ -20,8 +20,7 @@ jobs:
       # 2. Docker 이미지 빌드
       - name: Build Docker image
         run: |
-          echo "Building image for branch: ${{ github.ref }}"
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          if [ "${{ github.ref_name }}" == "develop" ]; then
             docker build \
               --build-arg BUILD_CONFIGURATION=Debug \
               --build-arg ASPNETCORE_ENVIRONMENT=Development \
@@ -43,20 +42,28 @@ jobs:
       # 4. Docker 이미지 푸시
       - name: Push Docker image
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          if [ "${{ github.ref_name }}" == "develop" ]; then
             docker push nuu042/mylio:develop
           else
             docker push nuu042/mylio:latest
           fi
 
-      # 5. Docker Compose 파일 복사
+      # 5. Configure SSH with PEM Key
+      - name: Configure SSH with PEM Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PEM_KEY }}" > ~/.ssh/key.pem
+          chmod 600 ~/.ssh/key.pem
+          ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts
+
+      # 6. 원격 서버에 Docker Compose 파일 복사
       - name: Copy docker-compose.server.yml to remote server
         env:
           DEPLOY_SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
           DEPLOY_SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
         run: |
-          ls -l
-          scp -o StrictHostKeyChecking=no docker-compose.server.yml $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP:/home/$DEPLOY_SERVER_USER/
+          scp -i ~/.ssh/key.pem -o StrictHostKeyChecking=no docker-compose.server.yml \
+              $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP:/home/$DEPLOY_SERVER_USER/
 
       # 7. 원격 서버에서 Docker Compose로 배포
       - name: Deploy using Docker Compose
@@ -64,9 +71,8 @@ jobs:
           DEPLOY_SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
           DEPLOY_SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
         run: |
-          ssh -o StrictHostKeyChecking=no $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP << 'EOF'
-          echo "Deploying to server: $DEPLOY_SERVER_IP"
-          cd /home/$DEPLOY_SERVER_USER/project/back/build || exit 1
+          ssh -i ~/.ssh/key.pem -o StrictHostKeyChecking=no $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP << 'EOF'
+          cd /home/$DEPLOY_SERVER_USER/project/back/build
           docker-compose down || true
           docker-compose pull
           docker-compose up -d
