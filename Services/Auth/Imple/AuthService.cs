@@ -149,7 +149,7 @@ public class AuthService : IAuthService {
     }
 
     private async Task<PlayGamesPayload> ValidateGpgsToken(string idToken) {
-        var url = $"https://www.googleapis.com/games/v1/applications/{_configuration["Authentication:GPGS:AppId"]}/verify/";
+        var url = $"https://www.googleapis.com/games/v1/applications/{_configuration["Authentication:GPGS:AppId"]}/verify";
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", idToken);
 
         var response = await _httpClient.GetAsync(url);

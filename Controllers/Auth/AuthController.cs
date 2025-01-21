@@ -59,7 +59,7 @@ public class AuthController : ControllerBase {
     [HttpPost("gpgs/login")]
     public async Task<IActionResult> GpgsLogin([FromBody] SocialLoginRequest request) {
         try {
-            Console.WriteLine(request);
+            Console.WriteLine("***********Gpgs Login Request"+request.IdToken);
             var (accessToken, refreshToken) = await _authService.GpgsLoginAsync(request.IdToken);
             return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
         }
