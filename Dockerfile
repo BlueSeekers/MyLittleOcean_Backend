@@ -6,10 +6,13 @@ EXPOSE 5001
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
-# 빌드 구성 설정 (Release , Debug)  -- prod 배포시 꼭 변경하기
-ARG BUILD_CONFIGURATION=Debug
-# 환경 변수 설정 (Development, Production) -- prod 배포시 꼭 변경하기
-ARG ASPNETCORE_ENVIRONMENT=Development
+# 환경 변수 기본값 설정 (빌드 및 실행 시 동기화됨)
+ENV BUILD_CONFIGURATION=Debug
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+# ARG 설정 (ENV 값을 사용하여 동기화)
+ARG BUILD_CONFIGURATION=$BUILD_CONFIGURATION
+ARG ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 
 WORKDIR /src
 COPY ["mylio.csproj", "."]
@@ -21,14 +24,16 @@ WORKDIR "/src/."
 RUN dotnet build "./mylio.csproj" -c $BUILD_CONFIGURATION -o /app/build
 # 앱 배포를 위한 Publish 단계
 FROM build AS publish
-# (Release , Debug)  -- prod 배포시 꼭 변경하기
-ARG BUILD_CONFIGURATION=Debug
+# ENV를 통해 ARG 값을 설정
+ARG BUILD_CONFIGURATION=$BUILD_CONFIGURATION
+ARG ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 RUN dotnet publish "./mylio.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # 최종 실행 이미지 설정
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-# ASPNETCORE_ENVIRONMENT (Development)  -- prod 배포시 주석처리하기
-ENV ASPNETCORE_ENVIRONMENT=Development
+# 실행 시 환경 변수
+ENV BUILD_CONFIGURATION=$BUILD_CONFIGURATION
+ENV ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
 ENTRYPOINT ["dotnet", "mylio.dll"]
