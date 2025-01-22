@@ -1,0 +1,14 @@
+services:
+  app:
+    image: nuu042/mylio:develop
+    container_name: mylio-dev
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_RUNNING_IN_CONTAINER=true
+
+networks:
+  default:
+    driver: bridge
