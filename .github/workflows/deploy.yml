@@ -76,13 +76,11 @@ jobs:
           DEPLOY_SERVER_USER: ${{ secrets.DEPLOY_SERVER_USER }}
           DEPLOY_SERVER_IP: ${{ secrets.DEPLOY_SERVER_IP }}
           DEPLOY_SERVER_PORT: ${{ secrets.DEPLOY_SERVER_PORT }}
-          TAG: ${{ github.ref_name }}
-          ENVIRONMENT: ${{ secrets.ASPNETCORE_ENVIRONMENT || 'Production' }}
         run: |
-          ssh -i ~/.ssh/key.pem -p $DEPLOY_SERVER_PORT -o StrictHostKeyChecking=no $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP << 'EOF'
+          ssh -i ~/.ssh/key.pem -p $DEPLOY_SERVER_PORT -o StrictHostKeyChecking=no $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP << EOF
           cd /home/ubuntu/project/back/build
-          export TAG=${TAG}
-          export ENVIRONMENT=${ENVIRONMENT}
+          export TAG=${{ github.ref_name:-main }}
+          export ENVIRONMENT=${{ secrets.ASPNETCORE_ENVIRONMENT:-Production }}
           echo "Using TAG=$TAG and ENVIRONMENT=$ENVIRONMENT"
           docker-compose -f docker-compose.server.yml down || true
           docker-compose -f docker-compose.server.yml pull
