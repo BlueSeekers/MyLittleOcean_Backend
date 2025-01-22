@@ -63,6 +63,7 @@ jobs:
           else
             scp -i ~/.ssh/key.pem -P $DEPLOY_SERVER_PORT -o StrictHostKeyChecking=no docker-compose.prod.yml \
                 $DEPLOY_SERVER_USER@$DEPLOY_SERVER_IP:/home/ubuntu/project/back/build/docker-compose.yml
+          fi
 
       - name: Debug copied files
         env:
