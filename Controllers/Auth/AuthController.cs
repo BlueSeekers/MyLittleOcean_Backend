@@ -61,7 +61,6 @@ public class AuthController : ControllerBase {
         try {
             Console.WriteLine("***********Gpgs Login Request"+request.IdToken);
             var (accessToken, refreshToken) = await _authService.GpgsLoginAsync(request.IdToken);
-            Console.WriteLine($"ac:{accessToken}, rf:{refreshToken}");
             return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
         }
         catch (ArgumentException ex) {
