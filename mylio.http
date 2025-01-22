@@ -1,0 +1,6 @@
+@mylio_HostAddress = http://localhost:5042
+
+GET {{mylio_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,6 +1,0 @@
-@MyLittleOcean_HostAddress = http://localhost:5042
-
-GET {{MyLittleOcean_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

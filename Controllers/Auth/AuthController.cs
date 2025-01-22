@@ -1,109 +1,95 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 
 [ApiController]
 [Route("[controller]")]
 public class AuthController : ControllerBase {
-    private readonly string _jwtKey = "blueseekers_0703_my_little_ocean_story"; // JWT 비밀 키
-    private readonly string _issuer = "http://localhost:7122";
-    private readonly string _audience = "http://localhost:7122";
+    private readonly IAuthService _authService;
 
-    private readonly IAuthService _userService;
-
-    public AuthController(IAuthService userService) {
-        _userService = userService;
+    public AuthController(IAuthService authService) {
+        _authService = authService;
     }
 
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public IActionResult Login([FromBody] LoginRequestDto request) {
-        if (request.Username == "test" && request.Password == "password") {
-            // Access Token 생성
-            var accessToken = GenerateToken(request.Username, TimeSpan.FromMinutes(30)); // 유효기간 30분
-
-            // Refresh Token 생성
-            var refreshToken = GenerateToken(request.Username, TimeSpan.FromDays(7)); // 유효기간 7일
-
-            return Ok(new {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken
-            });
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto request) {
+        try {
+            var (accessToken, refreshToken) = await _authService.LoginAsync(request.Username, request.Password);
+            return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
         }
-
-        return Unauthorized("Invalid username or password.");
+        catch (UnauthorizedAccessException) {
+            return Unauthorized("Invalid username or password.");
+        }
     }
 
     [HttpPost("refresh")]
-    public IActionResult Refresh([FromBody] RefreshRequestDto request) {
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto request) {
         try {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_jwtKey);
-
-            // Refresh Token 검증
-            var principal = tokenHandler.ValidateToken(request.RefreshToken, new TokenValidationParameters {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true, // 만료 여부 검증
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = _issuer,
-                ValidAudience = _audience,
-                IssuerSigningKey = new SymmetricSecurityKey(key)
-            }, out SecurityToken validatedToken);
-
-            // Refresh Token이 유효하면 새로운 Access Token 생성
-            var username = principal.Identity?.Name; // 사용자 이름 가져오기
-            var newAccessToken = GenerateToken(username, TimeSpan.FromMinutes(30)); // 새로운 Access Token 발급 - 60분
-
-            return Ok(new {
-                AccessToken = newAccessToken
-            });
+            var newAccessToken = await _authService.RefreshTokenAsync(request.RefreshToken);
+            return Ok(new { AccessToken = newAccessToken });
         }
-        catch (SecurityTokenExpiredException) {
-            return Unauthorized("Refresh token has expired.");
-        }
-        catch (Exception ex) {
-            return Unauthorized($"Invalid refresh token: {ex.Message}");
+        catch (UnauthorizedAccessException ex) {
+            return Unauthorized(ex.Message);
         }
     }
 
-    private string GenerateToken(string username, TimeSpan validFor) {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_jwtKey);
+    [HttpPost("google/login")]
+    public async Task<IActionResult> GoogleLogin([FromBody] SocialLoginRequest request) {
+        try {
+            var (accessToken, refreshToken) = await _authService.GoogleLoginAsync(request.IdToken);
+            return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
+        }
+        catch (ArgumentException ex) {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex) {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception) {
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
 
-        var tokenDescriptor = new SecurityTokenDescriptor {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, username)
-            }),
-            Expires = DateTime.UtcNow.Add(validFor), // 유효기간 설정
-            Issuer = _issuer,
-            Audience = _audience,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+    [HttpPost("gpgs/login")]
+    public async Task<IActionResult> GpgsLogin([FromBody] SocialLoginRequest request) {
+        try {
+            Console.WriteLine("***********Gpgs Login Request"+request.IdToken);
+            var (accessToken, refreshToken) = await _authService.GpgsLoginAsync(request.IdToken);
+            Console.WriteLine($"ac:{accessToken}, rf:{refreshToken}");
+            return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
+        }
+        catch (ArgumentException ex) {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex) {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception) {
+            return StatusCode(500, new { error = "Internal server error" });
+        }
     }
 
     [HttpPost("signup")]
-    public IActionResult CreateUser([FromBody] AuthCreateDto userCreateDto) {
-        if (userCreateDto.userId.IsNullOrEmpty()) {
-            return BadRequest("No information exists");
+    public async Task<IActionResult> CreateUser([FromBody] AuthCreateDto userCreateDto) {
+        if (string.IsNullOrEmpty(userCreateDto.userId)) {
+            return BadRequest(new { error = "No information exists" });
         }
+
         try {
-            int createUser = _userService.CreateUser(userCreateDto);
-            if (createUser > 0)
-                return Ok(new { message = "User created successfully." });
-            else
-                return StatusCode(500, new { message = "Failed to create user." });
+            var userNo = await _authService.CreateUserAsync(userCreateDto);
+            return Ok(new { message = "User created successfully" });
         }
-        catch (Exception e) {
-            return BadRequest(new { error = e.Message });
+        catch (ArgumentException ex) {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { error = ex.Message });
         }
     }
-
 }

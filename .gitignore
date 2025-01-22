@@ -81,3 +81,6 @@ Desktop.ini
 _Compile.skip
 .css.map
 .js.map
+
+#tar 파일 비포함
+*.tar
