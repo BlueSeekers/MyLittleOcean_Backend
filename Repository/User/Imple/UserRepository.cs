@@ -29,10 +29,10 @@ public class UserRepository : IUserRepository
             var userQuery = @"
             INSERT INTO tb_user_info (  
                 user_no, user_id, user_email,
-                account_locked, provider, create_date
+                account_locked, provider, create_date, update_date
             ) VALUES (   
                 NULL, @UserId, @UserEmail,
-                false, @Provider, NOW()
+                false, @Provider, NOW(), NOW()
             );
             SELECT LAST_INSERT_ID();";
 
@@ -77,8 +77,8 @@ public class UserRepository : IUserRepository
     public async Task<int> CreateUserAsync(AuthCreateDto userCreateDto) {
         using var connection = new MySqlConnection(_connectionString);
         var sql = @"INSERT INTO tb_user_info
-            (user_id, user_name, user_email, account_locked, create_date, provider)
-            VALUES (@userId, @userName, @userEmail, false, NOW(), @provider);
+            (user_id, user_name, user_email, account_locked, provider, create_date, update_date)
+            VALUES (@userId, @userName, @userEmail, false, @provider, NOW(), NOW());
             SELECT LAST_INSERT_ID();";
 
         return await connection.ExecuteScalarAsync<int>(sql, userCreateDto);
