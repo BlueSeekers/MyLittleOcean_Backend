@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("[controller]")]
-//[Authorize]
+[Authorize]
 public class RankingController : ControllerBase
 {
     private readonly IRankingService _rankingService;

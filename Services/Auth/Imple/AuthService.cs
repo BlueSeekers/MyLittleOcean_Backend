@@ -82,8 +82,6 @@ public class AuthService : IAuthService {
         var accessToken = GenerateToken(payload.Email, TimeSpan.FromMinutes(30));
         var refreshToken = GenerateToken(payload.Email, TimeSpan.FromDays(7));
 
-        Console.WriteLine($"ac:{accessToken}, rf:{refreshToken}");
-
         return (accessToken, refreshToken);
     }
 

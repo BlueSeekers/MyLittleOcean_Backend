@@ -1,7 +1,4 @@
-﻿
-using System.Security.AccessControl;
-
-public class RankingService : IRankingService
+﻿public class RankingService : IRankingService
 {
     private readonly IRankingRepository _rankingRepository;
 
