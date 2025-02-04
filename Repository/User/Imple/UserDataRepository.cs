@@ -37,7 +37,7 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @"UPDATE tb_user_data SET" +
                 " coin_amount = coin_amount - @amount" +
                 " WHERE data.user_no = @userNo";
-            int rowsAffected = db.Execute(sql, useByNoDto);
+            int rowsAffected = db.Execute(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
     }
@@ -47,7 +47,7 @@ public class UserDataRepository : IUserDataRepository {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @" UPDATE tb_user_data SET coin_amount = coin_amount - @amount" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
-            int rowsAffected = db.Execute(sql, useByIdDto);
+            int rowsAffected = db.Execute(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
     }
@@ -58,7 +58,7 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @"UPDATE tb_user_data SET" +
                 " token_amount = token_amount - @amount" +
                 " WHERE data.user_no = @userNo";
-            int rowsAffected = db.Execute(sql, useByNoDto);
+            int rowsAffected = db.Execute(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
     }
@@ -68,7 +68,7 @@ public class UserDataRepository : IUserDataRepository {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @" UPDATE tb_user_data SET token_amount = token_amount - @amount" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
-            int rowsAffected = db.Execute(sql, useByIdDto);
+            int rowsAffected = db.Execute(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
     }

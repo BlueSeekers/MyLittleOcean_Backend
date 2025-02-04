@@ -64,6 +64,31 @@ public class AuthService : IAuthService {
         return GenerateToken(username, TimeSpan.FromMinutes(30));
     }
 
+    public async Task<bool> UpdateUserNameAsync(int userNo, string newUserName) {
+        if (string.IsNullOrEmpty(newUserName)) {
+            throw new ArgumentException("User name is required");
+        }
+
+        var updateResult = await _userRepository.UpdateUserNameAsync(userNo, newUserName);
+        if (updateResult <= 0) {
+            throw new Exception("Failed to update user name. The name might be duplicate or user doesn't exist");
+        }
+
+        return true;
+    }
+    public async Task<bool> UpdateUserNameAsync(string userId, string newUserName) {
+        if (string.IsNullOrEmpty(newUserName)) {
+            throw new ArgumentException("User name is required");
+        }
+
+        var updateResult = await _userRepository.UpdateUserNameAsync(userId, newUserName);
+        if (updateResult <= 0) {
+            throw new Exception("Failed to update user name. The name might be duplicate or user doesn't exist");
+        }
+
+        return true;
+    }
+
     public async Task<(string AccessToken, string RefreshToken)> GoogleLoginAsync(string idToken) {
         var payload = await ValidateGoogleToken(idToken);
         await SaveUserAsync(payload.Subject, payload.Email, "google");
