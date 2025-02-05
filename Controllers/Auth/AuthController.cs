@@ -20,7 +20,7 @@ public class AuthController : ControllerBase {
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto request) {
         try {
-            var (accessToken, refreshToken) = await _authService.LoginAsync(request.Username, request.Password);
+            var (accessToken, refreshToken) = await _authService.LoginAsync(request.UserID);
             return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
         }
         catch (UnauthorizedAccessException) {

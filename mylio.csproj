@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Models\Common\" />
     <Folder Include="Models\Follow\" />
     <Folder Include="Repository\Follow\Interface\" />
     <Folder Include="Repository\Follow\Imple\" />

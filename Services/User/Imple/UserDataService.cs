@@ -9,8 +9,12 @@
     /// </summary>
     /// <param name="useByNoDto"></param>
     /// <returns></returns>
-    public int UseTokenByNo(UseDataDto useDataDto) {
-        return _userDataRepository.UseCoinByNo(useDataDto);
+    public async Task<ServiceResult<int>> UseCoinByNo(UserDataDto useDataDto) {
+        int useCoin = await _userDataRepository.UseCoinByNo(useDataDto);
+        if (useCoin <= 0) {
+            return new ServiceResult<int>(false, "코인을 사용할 수 없습니다. 확인해주세요.", 0);
+        }
+        return new ServiceResult<int>(true, "Success", useCoin);
     }
 
     /// <summary>
@@ -18,8 +22,12 @@
     /// </summary>
     /// <param name="useByIdDto">useId : 유저 ID, amount : 수정 개수</param>
     /// <returns></returns>
-    public int UseCoinByID(UseDataDto useDataDto) {
-        return _userDataRepository.UseCoinByID(useDataDto);
+    public async Task<ServiceResult<int>> UseCoinByID(UserDataDto useDataDto) {
+        int useCoin = await _userDataRepository.UseCoinByID(useDataDto);
+        if (useCoin <= 0) {
+            return new ServiceResult<int>(false, "코인을 사용할 수 없습니다. 확인해주세요.", 0);
+        }
+        return new ServiceResult<int>(true, "Success", useCoin);
     }   
 
     /// <summary>
@@ -27,9 +35,12 @@
     /// </summary>
     /// <param name="useByNoDto"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public int UsertTokenByNo(UseDataDto useDataDto) {
-        return _userDataRepository.UseTokenByNo(useDataDto);
+    public async Task<ServiceResult<int>> UseTokenByNo(UserDataDto useDataDto) {
+        int useToken = await _userDataRepository.UseTokenByNo(useDataDto);
+        if (useToken <= 0) {
+            return new ServiceResult<int>(false, "토큰을 사용할 수 없습니다. 확인해주세요.", 0);
+        }
+        return new ServiceResult<int>(true, "Success", useToken);
     }
 
     /// <summary>
@@ -37,8 +48,11 @@
     /// </summary>
     /// <param name="useByIdDto"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public int UseTokenByID(UseDataDto useDataDto) {
-        return _userDataRepository.UseTokenByID(useDataDto);
+    public async Task<ServiceResult<int>> UseTokenByID(UserDataDto useDataDto) {
+        int useToken = await _userDataRepository.UseTokenByID(useDataDto);
+        if (useToken <= 0) {
+            return new ServiceResult<int>(false, "토큰을 사용할 수 없습니다. 확인해주세요.", 0);
+        }
+        return new ServiceResult<int>(true, "Success", useToken);
     }
 }

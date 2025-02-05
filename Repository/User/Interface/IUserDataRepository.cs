@@ -1,20 +1,20 @@
 ﻿public interface IUserDataRepository {
 
     //UserId로 유저 데이터 조회
-    UserData GetUserDataById(string userid);
+    Task<UserData?> GetUserDataById(string userid);
 
     //UserNo로 유저 데이터 조회
-    UserData GetUserDataByNo(int userNo);
+    Task<UserData?> GetUserDataByNo(int userNo);
 
     //UserNo로 코인 사용
-    int UseCoinByNo(UseDataDto useDataDto);
+    Task<int> UseCoinByNo(UserDataDto useDataDto);
 
     //UserId로 코인 사용
-    int UseCoinByID(UseDataDto useByIdDto);
+    Task<int> UseCoinByID(UserDataDto useByIdDto);
 
     //UserNo로 토큰 사용
-    int UseTokenByNo(UseDataDto useDataDto);
+    Task<int> UseTokenByNo(UserDataDto useDataDto);
 
     //UserId로 토큰 사용
-    int UseTokenByID(UseDataDto useByIdDto);
+    Task<int> UseTokenByID(UserDataDto useByIdDto);
 }

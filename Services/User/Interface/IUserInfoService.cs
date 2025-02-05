@@ -1,6 +1,8 @@
 ﻿public interface IUserInfoService {
 
-    UserFullData GetUserFullDataById(string id);
+    Task<ServiceResult<UserFullData>> GetUserFullDataById(string id);
 
-    UserFullData GetUserFullDataByNo(int userNo);
+    Task<ServiceResult<UserFullData>> GetUserFullDataByNo(int userNo);
+
+    Task<ServiceResult<UserFullData>> UpdateUserName(UserNameUpdateDto userNameUpdateDto);
 }

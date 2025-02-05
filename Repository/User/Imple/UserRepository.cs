@@ -61,10 +61,10 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> ValidateUserCredentialsAsync(string username, string password) {
+    public async Task<bool> ValidateUserCredentialsAsync(string userId) {
         using var connection = new MySqlConnection(_connectionString);
-        var query = "SELECT COUNT(1) FROM tb_user_info WHERE user_id = @Username AND user_pwd = @Password";
-        var count = await connection.ExecuteScalarAsync<int>(query, new { Username = username, Password = password });
+        var query = "SELECT COUNT(1) FROM tb_user_info WHERE user_id = @UserID";
+        var count = await connection.ExecuteScalarAsync<int>(query, new { UserID = userId });
         return count > 0;
     }
 

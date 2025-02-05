@@ -42,14 +42,14 @@ public class AuthService : IAuthService {
         return userNo;
     }
 
-    public async Task<(string AccessToken, string RefreshToken)> LoginAsync(string username, string password) {
-        var isValid = await _userRepository.ValidateUserCredentialsAsync(username, password);
+    public async Task<(string AccessToken, string RefreshToken)> LoginAsync(string userId) {
+        var isValid = await _userRepository.ValidateUserCredentialsAsync(userId);
         if (!isValid) {
             throw new UnauthorizedAccessException("Invalid credentials");
         }
 
-        var accessToken = GenerateToken(username, TimeSpan.FromMinutes(30));
-        var refreshToken = GenerateToken(username, TimeSpan.FromDays(7));
+        var accessToken = GenerateToken(userId, TimeSpan.FromMinutes(30));
+        var refreshToken = GenerateToken(userId, TimeSpan.FromDays(7));
 
         return (accessToken, refreshToken);
     }

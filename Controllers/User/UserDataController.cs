@@ -14,19 +14,19 @@ public class UserDataController : ControllerBase {
     [HttpPost("use/coin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public IActionResult UseCoin([FromBody] UseDataDto useDataDto) {
+    public async Task<IActionResult> UseCoin([FromBody] UserDataDto useDataDto) {
         if (useDataDto.UserNo == null && useDataDto.UserId == null) {
             return BadRequest("No information exists");
         }
         try {
             if (useDataDto.UserNo != null) {
-                int use = _userDataService.UseTokenByID(useDataDto);
-                return (use > 0) ? Ok("Coin Use Successfully")
+                var use = await _userDataService.UseTokenByID(useDataDto);
+                return (use.Success) ? Ok("Coin Use Successfully")
                     : StatusCode(500, new { message = "Failed to Use Coin" });
             }
             else if (useDataDto.UserId != null) {
-                int use = _userDataService.UseTokenByNo(useDataDto);
-                return (use > 0) ? Ok("Coin Use Successfully")
+                var use = await _userDataService.UseTokenByNo(useDataDto);
+                return (use.Success) ? Ok("Coin Use Successfully")
                     : StatusCode(500, new { message = "Failed to Use Coin" });
             }
             else {
@@ -34,26 +34,26 @@ public class UserDataController : ControllerBase {
             }
         }
         catch (Exception e) {
-            return StatusCode(500, new { message = "Failed to Use Coin" });
+            return StatusCode(500, new { message = e.Message });
         }
     }
 
     [HttpPost("use/token")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public IActionResult UseToken([FromBody] UseDataDto useDataDto) {
+    public async Task<IActionResult> UseToken([FromBody] UserDataDto useDataDto) {
         if (useDataDto.UserNo == null && useDataDto.UserId == null) {
             return BadRequest("No information exists");
         }
         try {
             if (useDataDto.UserNo != null) {
-                int use = _userDataService.UseTokenByID(useDataDto);
-                return (use > 0) ? Ok("Coin Use Successfully")
+                var use = await _userDataService.UseTokenByID(useDataDto);
+                return (use.Success) ? Ok("Coin Use Successfully")
                     : StatusCode(500, new { message = "Failed to Use Coin" });
             }
             else if (useDataDto.UserId != null) {
-                int use = _userDataService.UseTokenByNo(useDataDto);
-                return (use > 0) ? Ok("Coin Use Successfully")
+                var use = await _userDataService.UseTokenByNo(useDataDto);
+                return (use.Success) ? Ok("Coin Use Successfully")
                     : StatusCode(500, new { message = "Failed to Use Coin" });
             }
             else {
@@ -61,7 +61,7 @@ public class UserDataController : ControllerBase {
             }
         }
         catch (Exception e) {
-            return StatusCode(500, new { message = "Failed to Use Coin" });
+            return StatusCode(500, new { message = e.Message });
         }
     }
 }
