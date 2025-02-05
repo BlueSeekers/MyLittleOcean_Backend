@@ -57,22 +57,16 @@
         return new ServiceResult<UserFullData>(true, "Success", userFullData);
     }
 
-    /// <summary>
-    /// 유저 이름 업데이트
-    /// </summary>
-    /// <param name="userNameUpdateDto">UserNameUpdateDto</param>
-    /// <returns>업데이트된 UserFullData</returns>
-    public async Task<ServiceResult<UserFullData>> UpdateUserName(UserNameUpdateDto userNameUpdateDto) {
-        if (await _userInfoRepository.IsNameDuplicate(userNameUpdateDto.Name)) {
-            return new ServiceResult<UserFullData>(false, "해당 닉네임이 이미 존재합니다.");
+    public async Task<bool> UpdateUserNameAsync(string userId, string newUserName) {
+        if (string.IsNullOrEmpty(newUserName)) {
+            throw new ArgumentException("User name is required");
         }
 
-        bool updated = await _userInfoRepository.UpdateUserName(userNameUpdateDto.UserId, userNameUpdateDto.Name);
-        if (!updated) {
-            return new ServiceResult<UserFullData>(false, "Failed to update user name.");
+        var updateResult = await _userInfoRepository.UpdateUserNameAsync(userId, newUserName);
+        if (updateResult <= 0) {
+            throw new Exception("Failed to update user name. The name might be duplicate or user doesn't exist");
         }
 
-        var updatedUser = await GetUserFullDataById(userNameUpdateDto.UserId);
-        return new ServiceResult<UserFullData>(true, "Success", updatedUser.Data);
+        return true;
     }
 }

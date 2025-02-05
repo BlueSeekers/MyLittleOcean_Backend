@@ -91,38 +91,5 @@ public class AuthController : ControllerBase {
             return StatusCode(500, new { error = ex.Message });
         }
     }
-    [HttpPut("update/no/username")]
-    public async Task<IActionResult> UpdateUsernameByNo([FromBody] UpdateUsernameByNoDto request) {
-        if (string.IsNullOrEmpty(request.NewUsername)) {
-            return BadRequest(new { error = "Username is required" });
-        }
 
-        try {
-            await _authService.UpdateUserNameAsync(request.UserNo, request.NewUsername);
-            return Ok(new { message = "Username updated successfully" });
-        }
-        catch (ArgumentException ex) {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex) {
-            return StatusCode(500, new { error = ex.Message });
-        }
-    }
-    [HttpPut("update/id/username")]
-    public async Task<IActionResult> UpdateUsernameById([FromBody] UpdateUsernameByIdDto request) {
-        if (string.IsNullOrEmpty(request.NewUsername)) {
-            return BadRequest(new { error = "Username is required" });
-        }
-
-        try {
-            await _authService.UpdateUserNameAsync(request.UserId, request.NewUsername);
-            return Ok(new { message = "Username updated successfully" });
-        }
-        catch (ArgumentException ex) {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (Exception ex) {
-            return StatusCode(500, new { error = ex.Message });
-        }
-    }
 }

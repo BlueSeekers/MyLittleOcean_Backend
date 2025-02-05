@@ -44,25 +44,21 @@ public class UserInfoController : ControllerBase {
         }
     }
 
-    [HttpPost("update/name")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateName([FromBody] UserNameUpdateDto request) {
-        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 8) {
-            return BadRequest(new { message = "닉네임이 잘못되었습니다. 확인해주세요." });
+    [HttpPut("update/username")]
+    public async Task<IActionResult> UpdateUsernameById([FromBody] UpdateUsernameByIdDto request) {
+        if (string.IsNullOrEmpty(request.NewUsername)) {
+            return BadRequest(new { error = "Username is required" });
         }
 
         try {
-            var result = await _userInfoService.UpdateUserName(request);
-            if (!result.Success) {
-                return BadRequest(new { message = result.Message });
-            }
-            return Ok(new { message = "User name updated successfully." });
+            await _userInfoService.UpdateUserNameAsync(request.UserId, request.NewUsername);
+            return Ok(new { message = "Username updated successfully" });
         }
-        catch (Exception e) {
-            return StatusCode(500, new { message = e.Message });
+        catch (ArgumentException ex) {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { error = ex.Message });
         }
     }
 }

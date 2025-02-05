@@ -4,5 +4,5 @@
 
     Task<ServiceResult<UserFullData>> GetUserFullDataByNo(int userNo);
 
-    Task<ServiceResult<UserFullData>> UpdateUserName(UserNameUpdateDto userNameUpdateDto);
+    Task<bool> UpdateUserNameAsync(string userId, string newUserName);
 }

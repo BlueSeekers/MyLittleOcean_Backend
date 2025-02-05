@@ -8,6 +8,7 @@ public class UserInfoRepository : IUserInfoRepository {
     public UserInfoRepository(string connectionString) {
         _connectionString = connectionString;
     }
+
     // 유저 No 로 UserInfo 조회
     public async Task<UserInfo?> GetUserInfoByNo(int no) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
@@ -28,22 +29,23 @@ public class UserInfoRepository : IUserInfoRepository {
         }
     }
 
-    // 유저 닉네임 중복 확인
-    public async Task<bool> IsNameDuplicate(string name) {
-        using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @"SELECT COUNT(1) FROM tb_user_info info WHERE info.user_name = @name";
-            int count = await db.QueryFirstOrDefaultAsync<int>(sql, new { name });
-            return count > 0;
-        }
-    }
+    //유저 이름 업데이트
+    public async Task<int> UpdateUserNameAsync(string userId, string newUserName) {
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = @"
+        UPDATE tb_user_info 
+        SET user_name = @newUserName, 
+            update_date = NOW() 
+        WHERE user_id = @userId 
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM tb_user_info 
+            WHERE user_name = @newUserName 
+            AND user_id != @userId
+        );
+        SELECT ROW_COUNT() as updated_rows;";
 
-    //유저 닉네임 수정
-    public async Task<bool> UpdateUserName(string userId, string name) {
-        using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @"UPDATE tb_user_info SET user_name = @name WHERE user_id = @userId";
-            int count = await db.ExecuteAsync(sql, new { userId, name });
-            return count > 0;
-        }
+        return await connection.QueryFirstAsync<int>(sql, new { userId, newUserName });
     }
 
 }

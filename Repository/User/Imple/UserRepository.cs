@@ -93,39 +93,4 @@ public class UserRepository : IUserRepository
         return await connection.ExecuteAsync(sql, new { userNo });
     }
 
-    public async Task<int> UpdateUserNameAsync(int userNo, string newUserName) {
-        using var connection = new MySqlConnection(_connectionString);
-        var sql = @"
-        UPDATE tb_user_info 
-        SET user_name = @newUserName, 
-            update_date = NOW() 
-        WHERE user_no = @userNo 
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM tb_user_info 
-            WHERE user_name = @newUserName 
-            AND user_no != @userNo
-        );
-        SELECT ROW_COUNT() as updated_rows;";
-
-        return await connection.QueryFirstAsync<int>(sql, new { userNo, newUserName });
-    }
-
-    public async Task<int> UpdateUserNameAsync(string userId, string newUserName) {
-        using var connection = new MySqlConnection(_connectionString);
-        var sql = @"
-        UPDATE tb_user_info 
-        SET user_name = @newUserName, 
-            update_date = NOW() 
-        WHERE user_id = @userId 
-        AND NOT EXISTS (
-            SELECT 1 
-            FROM tb_user_info 
-            WHERE user_name = @newUserName 
-            AND user_id != @userId
-        );
-        SELECT ROW_COUNT() as updated_rows;";
-
-        return await connection.QueryFirstAsync<int>(sql, new { userId, newUserName });
-    }
 }
