@@ -11,10 +11,10 @@ public class UserDataController : ControllerBase {
         _userDataService = userDataService;
     }
 
-    [HttpPost("use/coin")]
+    [HttpPatch("use/coin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UseCoin([FromBody] UserDataDto useDataDto) {
+    public async Task<IActionResult> UseCoin([FromBody] UserUseDto useDataDto) {
         if (useDataDto.UserNo == null && useDataDto.UserId == null) {
             return BadRequest("No information exists");
         }
@@ -38,10 +38,10 @@ public class UserDataController : ControllerBase {
         }
     }
 
-    [HttpPost("use/token")]
+    [HttpPatch("use/token")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UseToken([FromBody] UserDataDto useDataDto) {
+    public async Task<IActionResult> UseToken([FromBody] UserUseDto useDataDto) {
         if (useDataDto.UserNo == null && useDataDto.UserId == null) {
             return BadRequest("No information exists");
         }
@@ -59,6 +59,19 @@ public class UserDataController : ControllerBase {
             else {
                 return StatusCode(500, new { message = "Failed to Use Coin" });
             }
+        }
+        catch (Exception e) {
+            return StatusCode(500, new { message = e.Message });
+        }
+    }
+
+    [HttpPatch("update/data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> UpdateData([FromBody] UserUpdateDataDto useDataDto) {
+        try {
+            var data = await _userDataService.UserDataUpdate(useDataDto);
+            return data.Success ? Ok(data.Data) : StatusCode(500, new { message = data.Message });
         }
         catch (Exception e) {
             return StatusCode(500, new { message = e.Message });

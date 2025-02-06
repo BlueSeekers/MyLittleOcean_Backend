@@ -7,14 +7,17 @@
     Task<UserData?> GetUserDataByNo(int userNo);
 
     //UserNo로 코인 사용
-    Task<int> UseCoinByNo(UserDataDto useDataDto);
+    Task<int> UseCoinByNo(UserUseDto useDataDto);
 
     //UserId로 코인 사용
-    Task<int> UseCoinByID(UserDataDto useByIdDto);
+    Task<int> UseCoinByID(UserUseDto useByIdDto);
 
     //UserNo로 토큰 사용
-    Task<int> UseTokenByNo(UserDataDto useDataDto);
+    Task<int> UseTokenByNo(UserUseDto useDataDto);
 
     //UserId로 토큰 사용
-    Task<int> UseTokenByID(UserDataDto useByIdDto);
+    Task<int> UseTokenByID(UserUseDto useByIdDto);
+
+    //유저 게임 데이터 업데이트
+    Task<bool> UserDataUpdate(UserUpdateDataDto userUpdateDataDto);
 }

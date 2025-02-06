@@ -1,6 +1,6 @@
 ﻿using Swashbuckle.AspNetCore.Annotations;
 
-public class UserDataDto {
+public class UserUseDto {
     private int? userNo;
     private string? userId;
     private int amount;
