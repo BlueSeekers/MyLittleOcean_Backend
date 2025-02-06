@@ -54,17 +54,34 @@ public class RankingRepository : IRankingRepository {
             }).ToList();
         }
     }
-    // 랭킹 데이터 저장/수정
+
+    // 랭킹 데이터 저장
+    public void InsertRank(RankDetail rank) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @"
+                INSERT INTO tb_rank (game_type, user_no, rank_value, create_date)
+                SELECT @GameType, @UserNo, @RankValue, NOW()
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM tb_rank
+                    WHERE game_type = @GameType
+                      AND user_no = @UserNo
+                      AND DATE(create_date) = CURDATE()
+                );";
+            db.Execute(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
+        }
+    }
+
+    // 랭킹 데이터 수정(rank value가 크면 업데이트)
     public void UpdateRank(RankDetail rank) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
-                INSERT INTO tb_rank (game_type, user_no, rank_value, create_date) 
-                VALUES (@GameType, @UserNo, @RankValue, NOW())
-                ON DUPLICATE KEY UPDATE 
-                    rank_value = VALUES(rank_value), 
-                    create_date = NOW()";
-
-            Task<int> task = _queryLogger.ExecuteAsync(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
+            UPDATE tb_rank
+            SET rank_value = @RankValue, create_date = NOW()
+            WHERE game_type = @GameType
+              AND user_no = @UserNo
+              AND DATE(create_date) = CURDATE()
+              AND rank_value < @RankValue;";
             db.Execute(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
         }
     }

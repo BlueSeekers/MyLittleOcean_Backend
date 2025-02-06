@@ -39,6 +39,7 @@
     public void UpdateRank(RankDetail rank)
     {
         ValidateRank(rank);
+        _rankingRepository.InsertRank(rank);
         _rankingRepository.UpdateRank(rank);
     }
     public string ToDateTimeString(DateTime date)
