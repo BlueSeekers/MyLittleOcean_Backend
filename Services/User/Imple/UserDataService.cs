@@ -61,7 +61,6 @@
     /// </summary>
     /// <param name="updateData">coinAmount, tokenAmount</param>
     public async Task<ServiceResult<UserData>> UserDataUpdate(UserUpdateDataDto updateData) {
-        Console.WriteLine($"updateData : ${updateData.userId} , ${updateData.coinAmount}, ${updateData.tokenAmount}");
         bool update = await _userDataRepository.UserDataUpdate(updateData);
         if (update) {
             UserData? userData = await _userDataRepository.GetUserDataById(updateData.userId);

@@ -45,7 +45,7 @@ public class UserDataRepository : IUserDataRepository {
                 " WHERE data.user_no = @userNo AND coin_amount >= @amount";
 
             var parameters = new { amount = useDataDto.Amount, userId = useDataDto.UserId };
-            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            await _queryLogger.ExecuteAsync(sql, parameters);
             int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -75,7 +75,7 @@ public class UserDataRepository : IUserDataRepository {
                 " WHERE data.user_no = @userNo AND token_amount >= @amount";
 
             var parameters = new { amount = useDataDto.Amount, userId = useDataDto.UserId };
-            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            await _queryLogger.ExecuteAsync(sql, parameters);
             int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -88,7 +88,7 @@ public class UserDataRepository : IUserDataRepository {
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)" +
                         " AND token_amount >= @amount";
             var parameters = new { amount = useDataDto.Amount, userId = useDataDto.UserId };
-            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            await _queryLogger.ExecuteAsync(sql, parameters);
             int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -99,8 +99,8 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @"UPDATE tb_user_data SET token_amount = @tokenAmount, coin_amount = @coinAmount, update_date = NOW()" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
 
-            var parameters = new { tokenAmont = updateData.tokenAmount, coinAmount = updateData.coinAmount, userId = updateData.userId };
-            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            var parameters = new { tokenAmount = updateData.tokenAmount, coinAmount = updateData.coinAmount, userId = updateData.userId };
+            await _queryLogger.ExecuteAsync(sql, parameters);
             int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? true : false;
         }
