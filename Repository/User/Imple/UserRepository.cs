@@ -18,7 +18,6 @@ public class UserRepository : IUserRepository {
         try {
             // 1. 유저가 이미 존재하는지 확인
             var checkQuery = "SELECT user_no FROM tb_user_info WHERE user_id = @UserId";
-            await _queryLogger.ExecuteAsync(checkQuery, new { UserId = userId });
             var existingUserNo = await connection.QueryFirstOrDefaultAsync<int?>(checkQuery, new { UserId = userId }, transaction);
 
             if (existingUserNo.HasValue) {
@@ -34,18 +33,11 @@ public class UserRepository : IUserRepository {
             ) VALUES (   
                 NULL, @UserId, @UserEmail,
                 false, @Provider, NOW(), NOW()
-            );
-            SELECT LAST_INSERT_ID();";
+            );";
 
+            await connection.ExecuteAsync(userQuery, new { UserId = userId, UserEmail = userEmail, Provider = provider }, transaction);
 
-            // SQL 실행 전 로그 기록
-            await _queryLogger.ExecuteAsync(userQuery, new { UserId = userId, UserEmail = userEmail, Provider = provider });
-
-            var userNo = await connection.ExecuteScalarAsync<int>(userQuery, new {
-                UserId = userId,
-                UserEmail = userEmail,
-                Provider = provider,
-            }, transaction);
+            var userNo = await connection.ExecuteScalarAsync<int>("SELECT LAST_INSERT_ID();", transaction: transaction);
 
             // 3. tb_user_data에 insert
             var dataQuery = @"
@@ -55,14 +47,15 @@ public class UserRepository : IUserRepository {
                 @UserNo, 0, 5, NOW()
             )";
 
-            await _queryLogger.ExecuteAsync(dataQuery, new { UserNo = userNo });
             await connection.ExecuteAsync(dataQuery, new { UserNo = userNo }, transaction);
 
             await transaction.CommitAsync();
             return true;
         }
-        catch {
+        catch (Exception ex) {
             await transaction.RollbackAsync();
+            await _queryLogger.ExecuteAsync("INSERT INTO tb_error_logs (error_message, create_date) VALUES (@Message, NOW());",
+                new { Message = ex.Message });
             throw;
         }
     }
