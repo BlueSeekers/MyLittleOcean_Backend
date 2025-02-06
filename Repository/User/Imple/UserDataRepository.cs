@@ -44,8 +44,9 @@ public class UserDataRepository : IUserDataRepository {
                 " coin_amount = coin_amount - @amount, update_date = NOW()" +
                 " WHERE data.user_no = @userNo AND coin_amount >= @amount";
 
-            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
-            int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
+            var parameters = new { amount = useDataDto.Amount, userId = useDataDto.UserId };
+            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? 1 : 0;
         }
     }
@@ -59,8 +60,9 @@ public class UserDataRepository : IUserDataRepository {
                 WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId) 
                 AND coin_amount >= @amount";
 
-            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
-            int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
+            var parameters = new { amount = useDataDto.Amount, userId = useDataDto.UserId };
+            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? 1 : 0;
         }
     }
@@ -72,8 +74,9 @@ public class UserDataRepository : IUserDataRepository {
                 " token_amount = token_amount - @amount, update_date = NOW()" +
                 " WHERE data.user_no = @userNo AND token_amount >= @amount";
 
-            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
-            int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
+            var parameters = new { amount = useDataDto.Amount, userId = useDataDto.UserId };
+            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? 1 : 0;
         }
     }
@@ -84,9 +87,9 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @" UPDATE tb_user_data SET token_amount = token_amount - @amount, update_date = NOW()" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)" +
                         " AND token_amount >= @amount";
-
-            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
-            int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
+            var parameters = new { amount = useDataDto.Amount, userId = useDataDto.UserId };
+            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? 1 : 0;
         }
     }
@@ -96,8 +99,9 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @"UPDATE tb_user_data SET token_amount = @tokenAmount, coin_amount = @coinAmount, update_date = NOW()" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
 
-            await _queryLogger.ExecuteAsync(sql, new { updateData });
-            int rowsAffected = await db.ExecuteAsync(sql, updateData);
+            var parameters = new { tokenAmont = updateData.tokenAmount, coinAmount = updateData.coinAmount, userId = updateData.userId };
+            await _queryLogger.ExecuteAsync(sql, new { parameters });
+            int rowsAffected = await db.ExecuteAsync(sql, parameters);
             return rowsAffected > 0 ? true : false;
         }
     }
