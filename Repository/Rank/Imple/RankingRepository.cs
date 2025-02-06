@@ -1,22 +1,19 @@
 ﻿using MySqlConnector;
 using Dapper;
 using System.Data;
-using System.Security.AccessControl;
-using System.Collections.Generic;
 
-public class RankingRepository : IRankingRepository
-{
+public class RankingRepository : IRankingRepository {
     private readonly string _connectionString;
+    private readonly QueryLogger _queryLogger;
 
-    public RankingRepository(string connectionString)
-    {
+    public RankingRepository(string connectionString, QueryLogger queryLogger) {
         _connectionString = connectionString;
+        _queryLogger = queryLogger;
     }
+
     // 특정 유저의 랭킹 순위 조회
-    public RankDetail? GetUserRanking(string gameType, int userNo)
-    {
-        using (IDbConnection db = new MySqlConnection(_connectionString))
-        {
+    public RankDetail? GetUserRanking(string gameType, int userNo) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
             var query = @"
             SELECT r.*, u.user_name
             FROM tb_rank r
@@ -24,15 +21,14 @@ public class RankingRepository : IRankingRepository
             WHERE r.game_type = @GameType
             AND r.user_no = @UserNo";
 
+            Task<int> task = _queryLogger.ExecuteAsync(query, new { GameType = gameType, UserNo = userNo });
             var rank = db.QuerySingleOrDefault<RankDetail>(query, new { GameType = gameType, UserNo = userNo });
             return rank;
         }
     }
     // 기간별 상위 랭킹 조회
-    public List<RankDetail> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN)
-    {
-        using (IDbConnection db = new MySqlConnection(_connectionString))
-        {
+    public List<RankDetail> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
                 SELECT r.rank_no, r.game_type, r.user_no, r.rank_value, r.create_date, u.user_name
                 FROM tb_rank r
@@ -40,10 +36,17 @@ public class RankingRepository : IRankingRepository
                 WHERE r.game_type = @GameType
                 AND r.create_date BETWEEN @StartDate AND @EndDate
                 ORDER BY r.rank_value DESC
-                LIMIT @TopN";
+                LIMIT @TopN"
+            ;
 
-            return db.Query<RankDetail>(sql, new
-            {
+            Task<int> task = _queryLogger.ExecuteAsync(sql, new {
+                GameType = gameType,
+                StartDate = startDate,
+                EndDate = endDate,
+                TopN = topN
+            });
+
+            return db.Query<RankDetail>(sql, new {
                 GameType = gameType,
                 StartDate = startDate,
                 EndDate = endDate,
@@ -52,10 +55,8 @@ public class RankingRepository : IRankingRepository
         }
     }
     // 랭킹 데이터 저장/수정
-    public void UpdateRank(RankDetail rank)
-    {
-        using (IDbConnection db = new MySqlConnection(_connectionString))
-        {
+    public void UpdateRank(RankDetail rank) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
                 INSERT INTO tb_rank (game_type, user_no, rank_value, create_date) 
                 VALUES (@GameType, @UserNo, @RankValue, NOW())
@@ -63,6 +64,7 @@ public class RankingRepository : IRankingRepository
                     rank_value = VALUES(rank_value), 
                     create_date = NOW()";
 
+            Task<int> task = _queryLogger.ExecuteAsync(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
             db.Execute(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
         }
     }

@@ -4,9 +4,11 @@ using System.Data;
 
 public class UserInfoRepository : IUserInfoRepository {
     private readonly string _connectionString;
+    private readonly QueryLogger _queryLogger;
 
-    public UserInfoRepository(string connectionString) {
+    public UserInfoRepository(string connectionString, QueryLogger queryLogger) {
         _connectionString = connectionString;
+        _queryLogger = queryLogger;
     }
 
     // 유저 No 로 UserInfo 조회
@@ -15,6 +17,7 @@ public class UserInfoRepository : IUserInfoRepository {
             string sql = @"SELECT user_no, user_id, user_name, user_email, account_locked, lock_date, provider, create_date, update_date " +
                 "FROM tb_user_info info " +
                 "WHERE info.user_no = @no";
+            await _queryLogger.ExecuteAsync(sql, new { no });
             return await db.QueryFirstOrDefaultAsync<UserInfo>(sql, new { no });
         }
     }
@@ -25,6 +28,7 @@ public class UserInfoRepository : IUserInfoRepository {
             string sql = @"SELECT user_no, user_id, user_name, user_email, account_locked, lock_date, provider, create_date, update_date " +
                 "FROM tb_user_info info " +
                 "WHERE info.user_id = @id";
+            await _queryLogger.ExecuteAsync(sql, new { id });
             return await db.QueryFirstOrDefaultAsync<UserInfo>(sql, new { id });
         }
     }
@@ -45,6 +49,7 @@ public class UserInfoRepository : IUserInfoRepository {
         );
         SELECT ROW_COUNT() as updated_rows;";
 
+        await _queryLogger.ExecuteAsync(sql, new { userId, newUserName });
         return await connection.QueryFirstAsync<int>(sql, new { userId, newUserName });
     }
 

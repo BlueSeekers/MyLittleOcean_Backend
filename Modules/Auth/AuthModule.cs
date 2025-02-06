@@ -9,7 +9,6 @@ public static class AuthModule {
         services.AddScoped<QueryLogger>();
 
         // Repository 등록
-        // TEST
         // services.AddScoped<IUserRepository>(provider => new UserRepository(connectionString));
         // UserRepository 등록 (QueryLogger 자동 주입)
         services.AddScoped<IUserRepository>(provider => {

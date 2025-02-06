@@ -1,8 +1,7 @@
 ﻿using Dapper;
 using MySqlConnector;
 
-public class UserRepository : IUserRepository
-{
+public class UserRepository : IUserRepository {
     private readonly string _connectionString;
     private readonly QueryLogger _queryLogger;
 
@@ -19,11 +18,12 @@ public class UserRepository : IUserRepository
         try {
             // 1. 유저가 이미 존재하는지 확인
             var checkQuery = "SELECT user_no FROM tb_user_info WHERE user_id = @UserId";
+            await _queryLogger.ExecuteAsync(checkQuery, new { UserId = userId });
             var existingUserNo = await connection.QueryFirstOrDefaultAsync<int?>(checkQuery, new { UserId = userId }, transaction);
 
             if (existingUserNo.HasValue) {
                 await transaction.CommitAsync();
-                return true; 
+                return true;
             }
 
             // 2. tb_user_info에 insert
@@ -36,6 +36,10 @@ public class UserRepository : IUserRepository
                 false, @Provider, NOW(), NOW()
             );
             SELECT LAST_INSERT_ID();";
+
+
+            // SQL 실행 전 로그 기록
+            await _queryLogger.ExecuteAsync(userQuery, new { UserId = userId, UserEmail = userEmail, Provider = provider });
 
             var userNo = await connection.ExecuteScalarAsync<int>(userQuery, new {
                 UserId = userId,
@@ -51,6 +55,7 @@ public class UserRepository : IUserRepository
                 @UserNo, 0, 5, NOW()
             )";
 
+            await _queryLogger.ExecuteAsync(dataQuery, new { UserNo = userNo });
             await connection.ExecuteAsync(dataQuery, new { UserNo = userNo }, transaction);
 
             await transaction.CommitAsync();
@@ -66,7 +71,7 @@ public class UserRepository : IUserRepository
         using var connection = new MySqlConnection(_connectionString);
         var query = "SELECT COUNT(1) FROM tb_user_info WHERE user_id = @UserID";
 
-        // SQL 실행 전 로그 기록 - test
+        // SQL 실행 전 로그 기록
         await _queryLogger.ExecuteAsync(query, new { UserID = userId });
 
         var count = await connection.ExecuteScalarAsync<int>(query, new { UserID = userId });
@@ -76,6 +81,7 @@ public class UserRepository : IUserRepository
     public async Task<UserDto> GetUserByUsernameAsync(string username) {
         using var connection = new MySqlConnection(_connectionString);
         var query = "SELECT user_name as Username, provider as Provider FROM tb_user_info WHERE user_id = @Username";
+        await _queryLogger.ExecuteAsync(query, new { Username = username });
         return await connection.QueryFirstOrDefaultAsync<UserDto>(query, new { Username = username });
     }
 
@@ -86,6 +92,7 @@ public class UserRepository : IUserRepository
             VALUES (@userId, @userName, @userEmail, false, @provider, NOW(), NOW());
             SELECT LAST_INSERT_ID();";
 
+        await _queryLogger.ExecuteAsync(sql, new { userCreateDto });
         return await connection.ExecuteScalarAsync<int>(sql, userCreateDto);
     }
 
@@ -95,6 +102,7 @@ public class UserRepository : IUserRepository
             (user_no, coin_amount, token_amount, update_date)
             VALUES (@userNo, 0, 5, NOW())";
 
+        await _queryLogger.ExecuteAsync(sql, new { userNo });
         return await connection.ExecuteAsync(sql, new { userNo });
     }
 

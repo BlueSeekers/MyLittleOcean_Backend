@@ -4,9 +4,11 @@ using System.Data;
 
 public class UserDataRepository : IUserDataRepository {
     private readonly string _connectionString;
+    private readonly QueryLogger _queryLogger;
 
-    public UserDataRepository(string connectionString) {
+    public UserDataRepository(string connectionString, QueryLogger queryLogger) {
         _connectionString = connectionString;
+        _queryLogger = queryLogger;
     }
 
     //유저 No로 UserData 조회
@@ -16,6 +18,8 @@ public class UserDataRepository : IUserDataRepository {
                 "FROM tb_user_data data " +
                 "INNER JOIN tb_user_info info ON data.user_no = info.user_no " +
                 "WHERE info.user_no = @userNo";
+
+            await _queryLogger.ExecuteAsync(sql, new { userNo });
             return await db.QueryFirstOrDefaultAsync<UserData>(sql, new { userNo });
         }
     }
@@ -27,6 +31,8 @@ public class UserDataRepository : IUserDataRepository {
                 "FROM tb_user_data data " +
                 "INNER JOIN tb_user_info info ON data.user_no = info.user_no " +
                 "WHERE info.user_id = @userId";
+
+            await _queryLogger.ExecuteAsync(sql, new { userId });
             return await db.QueryFirstOrDefaultAsync<UserData>(sql, new { userId });
         }
     }
@@ -37,6 +43,8 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @"UPDATE tb_user_data SET" +
                 " coin_amount = coin_amount - @amount, update_date = NOW()" +
                 " WHERE data.user_no = @userNo AND coin_amount >= @amount";
+
+            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -50,6 +58,8 @@ public class UserDataRepository : IUserDataRepository {
                 SET coin_amount = coin_amount - @amount, update_date = NOW()
                 WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId) 
                 AND coin_amount >= @amount";
+
+            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -61,6 +71,8 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @"UPDATE tb_user_data SET" +
                 " token_amount = token_amount - @amount, update_date = NOW()" +
                 " WHERE data.user_no = @userNo AND token_amount >= @amount";
+
+            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -72,6 +84,8 @@ public class UserDataRepository : IUserDataRepository {
             string sql = @" UPDATE tb_user_data SET token_amount = token_amount - @amount, update_date = NOW()" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)" +
                         " AND token_amount >= @amount";
+
+            await _queryLogger.ExecuteAsync(sql, new { useDataDto });
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -81,6 +95,8 @@ public class UserDataRepository : IUserDataRepository {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"UPDATE tb_user_data SET token_amount = @tokenAmount, coin_amount = @coinAmount, update_date = NOW()" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
+
+            await _queryLogger.ExecuteAsync(sql, new { updateData });
             int rowsAffected = await db.ExecuteAsync(sql, updateData);
             return rowsAffected > 0 ? true : false;
         }
