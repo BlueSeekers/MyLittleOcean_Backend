@@ -4,10 +4,11 @@ using MySqlConnector;
 public class UserRepository : IUserRepository
 {
     private readonly string _connectionString;
+    private readonly QueryLogger _queryLogger;
 
-    public UserRepository(string connectionString)
-    {
+    public UserRepository(string connectionString, QueryLogger queryLogger) {
         _connectionString = connectionString;
+        _queryLogger = queryLogger;
     }
 
     public async Task<bool> AddUserAsync(string userId, string userEmail, string provider) {
@@ -64,6 +65,10 @@ public class UserRepository : IUserRepository
     public async Task<bool> ValidateUserCredentialsAsync(string userId) {
         using var connection = new MySqlConnection(_connectionString);
         var query = "SELECT COUNT(1) FROM tb_user_info WHERE user_id = @UserID";
+
+        // SQL 실행 전 로그 기록 - test
+        await _queryLogger.ExecuteAsync(query, new { UserID = userId });
+
         var count = await connection.ExecuteScalarAsync<int>(query, new { UserID = userId });
         return count > 0;
     }

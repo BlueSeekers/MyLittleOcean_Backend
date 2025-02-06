@@ -24,6 +24,8 @@ ConfigureMiddleware(app);
 app.Run();
 
 void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIssuer, string jwtAudience, string connectionString) {
+    // QueryLogger 등록
+    services.AddScoped<QueryLogger>();
     // Dapper Extensions 추가 (snake to camel)
     DapperExtensions.UseSnakeCaseToCamelCaseMapping();
 
@@ -31,6 +33,13 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
     services.AddControllers(options => {
         options.Conventions.Add(new GlobalRoutePrefix("api/v1"));
     });
+
+    // MySQL DB 연결 설정
+    services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
+
+    // MySQL용 DB 연결 설정
+    services.AddSingleton<LoggingService>();
+    services.AddHostedService<UdpServerService>();
 
     // Swagger(OpenAPI) 설정
     services.AddEndpointsApiExplorer();
