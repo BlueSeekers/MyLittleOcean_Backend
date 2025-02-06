@@ -35,8 +35,8 @@ public class UserDataRepository : IUserDataRepository {
     public async Task<int> UseCoinByNo(UserUseDto useDataDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"UPDATE tb_user_data SET" +
-                " coin_amount = coin_amount - @amount" +
-                " WHERE data.user_no = @userNo";
+                " coin_amount = coin_amount - @amount, update_date = NOW()" +
+                " WHERE data.user_no = @userNo AND coin_amount >= @amount";
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -45,8 +45,11 @@ public class UserDataRepository : IUserDataRepository {
     //UserID로 Coin 사용
     public async Task<int> UseCoinByID(UserUseDto useDataDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @" UPDATE tb_user_data SET coin_amount = coin_amount - @amount" +
-                        " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
+            string sql = @"
+                UPDATE tb_user_data 
+                SET coin_amount = coin_amount - @amount, update_date = NOW()
+                WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId) 
+                AND coin_amount >= @amount";
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -56,8 +59,8 @@ public class UserDataRepository : IUserDataRepository {
     public async Task<int> UseTokenByNo(UserUseDto useDataDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"UPDATE tb_user_data SET" +
-                " token_amount = token_amount - @amount" +
-                " WHERE data.user_no = @userNo";
+                " token_amount = token_amount - @amount, update_date = NOW()" +
+                " WHERE data.user_no = @userNo AND token_amount >= @amount";
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -66,8 +69,9 @@ public class UserDataRepository : IUserDataRepository {
     //UserID로 Token 사용
     public async Task<int> UseTokenByID(UserUseDto useDataDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @" UPDATE tb_user_data SET token_amount = token_amount - @amount" +
-                        " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
+            string sql = @" UPDATE tb_user_data SET token_amount = token_amount - @amount, update_date = NOW()" +
+                        " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)" +
+                        " AND token_amount >= @amount";
             int rowsAffected = await db.ExecuteAsync(sql, useDataDto);
             return rowsAffected > 0 ? 1 : 0;
         }
@@ -75,7 +79,7 @@ public class UserDataRepository : IUserDataRepository {
 
     public async Task<bool> UserDataUpdate(UserUpdateDataDto updateData) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @"UPDATE tb_user_data SET token_amount = @tokenAmount, coin_amount = @coinAmount" +
+            string sql = @"UPDATE tb_user_data SET token_amount = @tokenAmount, coin_amount = @coinAmount, update_date = NOW()" +
                         " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
             int rowsAffected = await db.ExecuteAsync(sql, updateData);
             return rowsAffected > 0 ? true : false;
