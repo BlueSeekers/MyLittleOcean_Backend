@@ -65,7 +65,7 @@ public class AuthService : IAuthService {
 
     public async Task<(string AccessToken, string RefreshToken)> GoogleLoginAsync(string idToken) {
         var payload = await ValidateGoogleToken(idToken);
-        await SaveUserAsync(payload.Subject, payload.Email, "google");
+        await SaveUserAsync(payload.Subject, payload.Email, payload.Picture, "google");
 
         var accessToken = GenerateToken(payload.Email, TimeSpan.FromMinutes(30));
         var refreshToken = GenerateToken(payload.Email, TimeSpan.FromDays(7));
@@ -73,19 +73,8 @@ public class AuthService : IAuthService {
         return (accessToken, refreshToken);
     }
 
-    public async Task<(string AccessToken, string RefreshToken)> GpgsLoginAsync(string idToken) {
-        var payload = await ValidateGpgsToken(idToken);
-        Console.WriteLine($"id:{payload.Sub}, email:{payload.Email}");
-        await SaveUserAsync(payload.Sub, payload.Email, "GPGS");
-
-        var accessToken = GenerateToken(payload.Email, TimeSpan.FromMinutes(30));
-        var refreshToken = GenerateToken(payload.Email, TimeSpan.FromDays(7));
-
-        return (accessToken, refreshToken);
-    }
-
-    private async Task SaveUserAsync(string userId, string userEmail, string provider) {
-        var saved = await _userRepository.AddUserAsync(userId, userEmail, provider);
+    private async Task SaveUserAsync(string userId, string userEmail, string userImage, string provider) {
+        var saved = await _userRepository.AddUserAsync(userId, userEmail, userImage, provider);
         if (!saved) {
             throw new Exception("Failed to save user");
         }
@@ -145,20 +134,5 @@ public class AuthService : IAuthService {
         }
 
         return payload;
-    }
-
-    private async Task<PlayGamesPayload> ValidateGpgsToken(string idToken) {
-        var url = $"https://oauth2.googleapis.com/tokeninfo?id_token={idToken}";
-
-        var response = await _httpClient.GetAsync(url);
-        if (!response.IsSuccessStatusCode) {
-            throw new UnauthorizedAccessException("Invalid GPGS token");
-        }
-
-        var content = await response.Content.ReadFromJsonAsync<PlayGamesPayload>();
-        if (content == null) {
-            throw new Exception("Failed to parse GPGS token payload");
-        }
-        return content;
     }
 }

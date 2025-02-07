@@ -56,24 +56,6 @@ public class AuthController : ControllerBase {
         }
     }
 
-    [HttpPost("gpgs/login")]
-    public async Task<IActionResult> GpgsLogin([FromBody] SocialLoginRequest request) {
-        try {
-            Console.WriteLine("***********Gpgs Login Request"+request.IdToken);
-            var (accessToken, refreshToken) = await _authService.GpgsLoginAsync(request.IdToken);
-            return Ok(new { AccessToken = accessToken, RefreshToken = refreshToken });
-        }
-        catch (ArgumentException ex) {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (UnauthorizedAccessException ex) {
-            return Unauthorized(new { error = ex.Message });
-        }
-        catch (Exception) {
-            return StatusCode(500, new { error = "Internal server error" });
-        }
-    }
-
     [HttpPost("signup")]
     public async Task<IActionResult> CreateUser([FromBody] AuthCreateDto userCreateDto) {
         if (string.IsNullOrEmpty(userCreateDto.userId)) {

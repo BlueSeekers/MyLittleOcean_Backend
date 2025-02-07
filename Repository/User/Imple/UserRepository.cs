@@ -10,7 +10,7 @@ public class UserRepository : IUserRepository {
         _queryLogger = queryLogger;
     }
 
-    public async Task<bool> AddUserAsync(string userId, string userEmail, string provider) {
+    public async Task<bool> AddUserAsync(string userId, string userEmail, string userImage, string provider) {
         using var connection = new MySqlConnection(_connectionString);
         await connection.OpenAsync();
 
@@ -28,14 +28,14 @@ public class UserRepository : IUserRepository {
             // 2. tb_user_info에 insert
             var userQuery = @"
             INSERT INTO tb_user_info (  
-                user_no, user_id, user_email,
+                user_no, user_id, user_email, user_img,
                 account_locked, provider, create_date, update_date
             ) VALUES (   
-                NULL, @UserId, @UserEmail,
+                NULL, @UserId, @UserEmail, @UserImg,
                 false, @Provider, NOW(), NOW()
             );";
 
-            await connection.ExecuteAsync(userQuery, new { UserId = userId, UserEmail = userEmail, Provider = provider }, transaction);
+            await connection.ExecuteAsync(userQuery, new { UserId = userId, UserEmail = userEmail, UserImg = userImage, Provider = provider }, transaction);
 
             var userNo = await connection.ExecuteScalarAsync<int>("SELECT LAST_INSERT_ID();", transaction: transaction);
 
@@ -81,8 +81,8 @@ public class UserRepository : IUserRepository {
     public async Task<int> CreateUserAsync(AuthCreateDto userCreateDto) {
         using var connection = new MySqlConnection(_connectionString);
         var sql = @"INSERT INTO tb_user_info
-            (user_id, user_name, user_email, account_locked, provider, create_date, update_date)
-            VALUES (@userId, @userName, @userEmail, false, @provider, NOW(), NOW());
+            (user_id, user_name, user_email, user_img, account_locked, provider, create_date, update_date)
+            VALUES (@userId, @userName, @userEmail, @userImg, false, @provider, NOW(), NOW());
             SELECT LAST_INSERT_ID();";
 
         await _queryLogger.ExecuteAsync(sql, new { userCreateDto });
