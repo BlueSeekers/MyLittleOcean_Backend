@@ -26,9 +26,18 @@ public class RankingController : ControllerBase
 
     // 랭킹 데이터 추가 또는 업데이트
     [HttpPost("rank")]
-    public IActionResult UpdateRank([FromBody] RankDetail rank)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> InsertRank([FromBody] RankInsertDto rankParams)
     {
-        _rankingService.UpdateRank(rank);
-        return Ok(rank);
+        try {
+            var result = await _rankingService.InsertRank(rankParams);
+            if (!result.Success)
+                return NotFound(new { message = result.Message });
+            return Ok(result.Data);
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { error = ex.Message });
+        }       
     }
 }

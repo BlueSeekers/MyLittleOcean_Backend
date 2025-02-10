@@ -4,5 +4,5 @@
     RankDetail GetMyRanking(string gameType, int userNo);
     List<RankDetail> GetDailyRanks(string gameType, DateTime date, int count = DEFAULT_RANK_COUNT);
     List<RankDetail> GetMonthlyRanks(string gameType, DateTime date, int count = DEFAULT_RANK_COUNT);
-    void UpdateRank(RankDetail rank);
+    Task<ServiceResult<bool>> InsertRank(RankInsertDto rankParams);
 }

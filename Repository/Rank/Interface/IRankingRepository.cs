@@ -2,6 +2,8 @@
 {
     RankDetail? GetUserRanking(string gameType, int userNo);
     List<RankDetail> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN);
-    void InsertRank(RankDetail rank);
-    void UpdateRank(RankDetail rank);
+    Task<bool> InsertRank(RankInsertDto rank);
+    Task<bool> UpdateRank(RankInsertDto rank);
+
+    Task<bool> CheckRankExists(RankInsertDto rank);
 }

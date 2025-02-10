@@ -57,34 +57,45 @@ public class RankingRepository : IRankingRepository {
     }
 
     // 랭킹 데이터 저장
-    public void InsertRank(RankDetail rank) {
+    public async Task<bool> InsertRank(RankInsertDto rankDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
                 INSERT INTO tb_rank (game_type, user_no, rank_value, create_date)
-                SELECT @GameType, @UserNo, @RankValue, NOW()
-                WHERE NOT EXISTS (
-                    SELECT 1
-                    FROM tb_rank
-                    WHERE game_type = @GameType
-                        AND user_no = @UserNo
-                        AND DATE(create_date) = CURDATE()
-                );";
-            Task<int> task = _queryLogger.ExecuteAsync(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
-            db.Execute(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
+                VALUES (@gameType, @userNo, @rankValue, NOW())";
+
+            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
+            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
+            return rowsAffected > 0;
         }
     }
 
     // 랭킹 데이터 수정(rank value가 크면 업데이트)
-    public void UpdateRank(RankDetail rank) {
+    public async Task<bool> UpdateRank(RankInsertDto rankDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
-            UPDATE tb_rank
-            SET rank_value = @RankValue, create_date = NOW()
-            WHERE game_type = @GameType
-                AND user_no = @UserNo
-                AND DATE(create_date) = CURDATE()
-                AND rank_value < @RankValue;";
-            db.Execute(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
+                UPDATE tb_rank
+                SET rank_value = @rankValue, create_date = NOW()
+                WHERE game_type = @gameType
+                    AND user_no = @userNo
+                    AND DATE(create_date) = CURDATE()
+                    AND rank_value < @rankValue;";
+
+            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
+            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
+            return rowsAffected > 0;
+        }
+    }
+
+    public async Task<bool> CheckRankExists(RankInsertDto rankDto) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @"SELECT rank_value FROM tb_rank
+                    WHERE game_type = @gameType
+                        AND user_no = @userNo
+                        AND DATE(create_date) = CURDATE()
+                    LIMIT 1;";
+            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo });
+            bool exist = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userNo });
+            return exist;
         }
     }
 }
