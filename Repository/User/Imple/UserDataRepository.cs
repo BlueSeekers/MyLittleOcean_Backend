@@ -105,4 +105,16 @@ public class UserDataRepository : IUserDataRepository {
             return rowsAffected > 0 ? true : false;
         }
     }
+
+    public async Task<bool> RewardPayment(RewardParamsDto rewardParams) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @"UPDATE tb_user_data SET token_amount = token_amount + @amount, update_date = NOW()" +
+                        " WHERE user_no = ( SELECT user_no FROM tb_user_info WHERE user_id = @userId)";
+
+            var parameters = new { tokenAmount = rewardParams.amount, userId = rewardParams.userId };
+            await _queryLogger.ExecuteAsync(sql, parameters);
+            int rowsAffected = await db.ExecuteAsync(sql, parameters);
+            return rowsAffected > 0 ? true : false;
+        }
+    }
 }

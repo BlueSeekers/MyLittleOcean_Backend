@@ -20,4 +20,6 @@
 
     //유저 게임 데이터 업데이트
     Task<bool> UserDataUpdate(UserUpdateDataDto userUpdateDataDto);
+
+    Task<bool> RewardPayment(RewardParamsDto rewardParamsDto);
 }

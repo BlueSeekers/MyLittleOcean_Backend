@@ -14,4 +14,6 @@
 
     //Data Update
     Task<ServiceResult<UserData>> UserDataUpdate(UserUpdateDataDto userUpdateDto);
+
+    Task<ServiceResult<UserData>> RewardPayment(RewardParamsDto rewardParamsDto);
 }

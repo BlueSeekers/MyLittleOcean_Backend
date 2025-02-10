@@ -77,4 +77,17 @@ public class UserDataController : ControllerBase {
             return StatusCode(500, new { message = e.Message });
         }
     }
+
+    [HttpPatch("get/reward")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> RewardPayment([FromBody] RewardParamsDto rewardParams) {
+        try {
+            var data = await _userDataService.RewardPayment(rewardParams);
+            return data.Success ? Ok(data.Data) : StatusCode(500, new { message = data.Message });
+        }
+        catch (Exception e) {
+            return StatusCode(500, new { message = e.Message });
+        }
+    }
 }

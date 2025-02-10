@@ -72,4 +72,16 @@
             return new ServiceResult<UserData>(false, "Failed Update User Data");
         }
     }
+
+    public async Task<ServiceResult<UserData>> RewardPayment(RewardParamsDto rewardParams) {
+        bool update = await _userDataRepository.RewardPayment(rewardParams);
+        if (update) {
+            UserData? userData = await _userDataRepository.GetUserDataById(rewardParams.userId);
+            if (userData == null)
+                throw new Exception("Unable to retrieve user data.");
+            return new ServiceResult<UserData>(true, "Success", userData);
+        } else {
+            return new ServiceResult<UserData>(false, "Failed Payment Reward");
+        }
+    }
 }
