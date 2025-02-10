@@ -138,6 +138,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
 void ConfigureMiddleware(WebApplication app) {
     // 사용자 정의 에러 핸들링 미들웨어 추가
     app.UseMiddleware<ErrorHandlingMiddleware>();
+    app.UseMiddleware<LoggingMiddleware>();
 
     // 개발 환경에서 Swagger 활성화
     if (app.Environment.IsDevelopment()) {

@@ -1,6 +1,7 @@
 ﻿using MySqlConnector;
 using Dapper;
 using System.Data;
+using System.Security.AccessControl;
 
 public class RankingRepository : IRankingRepository {
     private readonly string _connectionString;
@@ -65,9 +66,10 @@ public class RankingRepository : IRankingRepository {
                     SELECT 1
                     FROM tb_rank
                     WHERE game_type = @GameType
-                      AND user_no = @UserNo
-                      AND DATE(create_date) = CURDATE()
+                        AND user_no = @UserNo
+                        AND DATE(create_date) = CURDATE()
                 );";
+            Task<int> task = _queryLogger.ExecuteAsync(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
             db.Execute(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
         }
     }
@@ -79,9 +81,9 @@ public class RankingRepository : IRankingRepository {
             UPDATE tb_rank
             SET rank_value = @RankValue, create_date = NOW()
             WHERE game_type = @GameType
-              AND user_no = @UserNo
-              AND DATE(create_date) = CURDATE()
-              AND rank_value < @RankValue;";
+                AND user_no = @UserNo
+                AND DATE(create_date) = CURDATE()
+                AND rank_value < @RankValue;";
             db.Execute(sql, new { rank.GameType, rank.UserNo, rank.RankValue });
         }
     }
