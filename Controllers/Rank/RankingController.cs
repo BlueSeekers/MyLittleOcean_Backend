@@ -27,7 +27,7 @@ public class RankingController : ControllerBase {
 
             await Task.WhenAll(userRankTask, rankListTask);
 
-            var userRank = await userRankTask ?? new RankDetail();
+            var userRank = await userRankTask ?? null;
             var rankList = await rankListTask ?? new List<RankDetail>();
 
             var ranks = new RankInfoDto {
