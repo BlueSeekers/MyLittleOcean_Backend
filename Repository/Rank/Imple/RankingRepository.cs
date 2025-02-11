@@ -140,7 +140,7 @@ public class RankingRepository : IRankingRepository {
             string sql = @"
                 UPDATE tb_rank r
                 JOIN tb_user_info u ON r.user_no = u.user_no
-                SET rank_value = @rankValue, create_date = NOW()
+                SET r.rank_value = @rankValue, r.create_date = NOW()
                 WHERE r.game_type = @gameType
                     AND u.user_id = @userId
                     AND DATE(r.create_date) = CURDATE()
@@ -155,12 +155,12 @@ public class RankingRepository : IRankingRepository {
     public async Task<bool> CheckRankExists(RankInsertDto rankDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"SELECT rank_value 
-                    FROM tb_rank
-                    INNER JOIN INFO ON INFO.user_no = tb_rank.user_no
+                    FROM tb_rank rank
+                    INNER JOIN tb_user_info info ON info.user_no = rank.user_no
                     WHERE 
-                        tb_rank.game_type = @gameType
-                        AND INFO.user_id = @userId
-                        AND DATE(tb_rank.create_date) = CURDATE()";
+                        rank.game_type = @gameType
+                        AND info.user_id = @userId
+                        AND DATE(rank.create_date) = CURDATE()";
             await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId });
             bool exist = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userId }) != null;
             return exist;
