@@ -1,7 +1,9 @@
 ﻿public interface IRankingRepository
 {
-    RankDetail? GetUserRanking(string gameType, string startDate, string endDate, int userNo);
-    List<RankDetail> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN);
+    Task<RankDetail?> GetUserRanking(RankParamsDto rankParams);
+    Task<List<RankDetail>> GetDailyRankList(RankParamsDto rankParams);
+    Task<List<RankDetail>> GetMonthRankList(RankParamsDto rankParams);
+
     Task<bool> InsertRank(RankInsertDto rank);
     Task<bool> UpdateRank(RankInsertDto rank);
 

@@ -6,37 +6,22 @@
     }
 
     // 내 랭킹 조회
-    public RankDetail? GetMyRanking(string gameType, DateTime date, int userNo) {
-        ValidateGameType(gameType);
-        ValidateUserNo(userNo);
-
-        var startDate = date.Date; // 해당일 00:00:00
-        var endDate = startDate.AddDays(1).AddSeconds(-1); // 해당일 23:59:59
-
-        return _rankingRepository.GetUserRanking(gameType, ToDateTimeString(startDate), ToDateTimeString(endDate), userNo);
+    public async Task<RankDetail?> GetMyRanking(RankParamsDto rankParams) {
+        return await _rankingRepository.GetUserRanking(rankParams);
     }
-    // 전체 랭킹(일간) 조회
-    public List<RankDetail> GetDailyRanks(string gameType, DateTime date, int count) {
-        ValidateGameType(gameType);
 
-        var startDate = date.Date; // 해당일 00:00:00
-        var endDate = startDate.AddDays(1).AddSeconds(-1); // 해당일 23:59:59
-
-        return _rankingRepository.GetTopRanksByPeriod(gameType, ToDateTimeString(startDate), ToDateTimeString(endDate), count);
-    }
-    // 월별 랭킹 조회
-    public List<RankDetail> GetMonthlyRanks(string gameType, DateTime date, int count) {
-        ValidateGameType(gameType);
-
-        var startDate = new DateTime(date.Year, date.Month, 1);
-        var endDate = startDate.AddMonths(1).AddSeconds(-1);
-
-        return _rankingRepository.GetTopRanksByPeriod(gameType, ToDateTimeString(startDate), ToDateTimeString(endDate), count);
+    // 전체 랭킹조회
+    public async Task<List<RankDetail>> GetRankingList(RankParamsDto rankParams) {
+        if (rankParams.dateType == DateType.Daily) {
+            return await _rankingRepository.GetDailyRankList(rankParams);
+        }
+        else {
+            return await _rankingRepository.GetMonthRankList(rankParams);
+        }
     }
 
     // 랭킹 데이터 추가 또는 업데이트
     public async Task<ServiceResult<bool>> InsertRank(RankInsertDto rankParams) {
-        ValidateRank(rankParams);
         var exist = await _rankingRepository.CheckRankExists(rankParams);
         if (exist) {
             var update = await _rankingRepository.UpdateRank(rankParams);
@@ -60,31 +45,6 @@
 
     public string ToDateTimeString(DateTime date) {
         return date.ToString("yyyy-MM-dd HH:mm:ss");
-    }
-
-    private void ValidateGameType(string gameType) {
-        if (string.IsNullOrEmpty(gameType)) {
-            throw new ArgumentException("GameType cannot be empty", nameof(gameType));
-        }
-    }
-
-    private void ValidateUserNo(long userNo) {
-        if (userNo <= 0) {
-            throw new ArgumentException("UserNo must be greater than 0", nameof(userNo));
-        }
-    }
-
-    private void ValidateRank(RankInsertDto rank) {
-        if (rank == null) {
-            throw new ArgumentNullException(nameof(rank));
-        }
-
-        ValidateGameType(rank.gameType);
-        ValidateUserNo(rank.userNo);
-
-        if (rank.rankValue < 0) {
-            throw new ArgumentException("RankValue cannot be negative", nameof(rank));
-        }
     }
 }
 

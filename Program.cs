@@ -1,8 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 using MySqlConnector;
+using Newtonsoft.Json.Serialization;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Data;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +37,9 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
     // 컨트롤러 및 글로벌 경로 프리픽스 설정
     services.AddControllers(options => {
         options.Conventions.Add(new GlobalRoutePrefix("api/v1"));
+    })
+    .AddJsonOptions( options => {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
     // MySQL DB 연결 설정
@@ -80,6 +88,7 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
             }
         });
 
+        c.SchemaFilter<EnumSchemaFilter>();
         c.EnableAnnotations();
     });
 
@@ -106,7 +115,6 @@ void ConfigureServices(IServiceCollection services, string jwtKey, string jwtIss
             };
         });
 
-    // MySQL�� DB ���� ����
     services.AddScoped<IDbConnection>(_ => new MySqlConnection(connectionString));
 
     // MySQL용 DB 연결 설정
@@ -162,4 +170,15 @@ void ConfigureMiddleware(WebApplication app) {
     app.MapGet("/", () => "Hello World!");
 
     app.Run("http://0.0.0.0:5000");
+}
+
+public class EnumSchemaFilter : ISchemaFilter {
+    public void Apply(OpenApiSchema schema, SchemaFilterContext context) {
+        if (context.Type.IsEnum) {
+            schema.Enum.Clear();
+            foreach (var name in Enum.GetNames(context.Type)) {
+                schema.Enum.Add(new OpenApiString(name));
+            }
+        }
+    }
 }

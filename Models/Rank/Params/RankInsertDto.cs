@@ -9,5 +9,5 @@ public class RankInsertDto {
     public int rankValue { get; set; }
 
     [SwaggerSchema("게임 종류")]
-    public string gameType { get; set; }
+    public GameType gameType { get; set; }
 }
