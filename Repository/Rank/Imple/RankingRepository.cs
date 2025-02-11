@@ -17,7 +17,7 @@ public class RankingRepository : IRankingRepository {
             var query = @" 
                     WITH RankedUsers AS (
                         SELECT 
-                            RANK() OVER (ORDER BY r.rank_value DESC) AS rank,
+                            RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
                             r.user_no,
                             r.rank_value,
                             r.create_date,
@@ -28,7 +28,7 @@ public class RankingRepository : IRankingRepository {
                         AND r.create_date BETWEEN @StartDate AND @EndDate
                     )
                     SELECT 
-                        rank_position, 
+                        ranking, 
                         user_name, 
                         rank_value, 
                         create_date
@@ -56,8 +56,8 @@ public class RankingRepository : IRankingRepository {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
                 SELECT 
-                    RANK() OVER (ORDER BY r.rank_value DESC) AS rank,
-                    r.rank_no, r.game_type, r.user_no, r.rank_value, r.create_date, u.user_name
+                    RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
+                    r.game_type, r.user_no, r.rank_value, r.create_date, u.user_name
                 FROM tb_rank r
                 LEFT JOIN mylio.tb_user_info u ON r.user_no = u.user_no
                 WHERE r.game_type = @GameType

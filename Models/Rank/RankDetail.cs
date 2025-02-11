@@ -3,7 +3,7 @@
 public class RankDetail {
 
     [SwaggerSchema("랭크 순위")]
-    public int rank { get; set; }
+    public int ranking { get; set; }
     [SwaggerSchema("유저 No")]
     public int userNo { get; set; }
     [SwaggerSchema("점수")]
