@@ -17,6 +17,7 @@ public class RankingRepository : IRankingRepository {
             var query = @" 
                     WITH RankedUsers AS (
                         SELECT 
+                            u.user_no,
                             RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
                             r.rank_value,
                             r.create_date,
@@ -27,10 +28,10 @@ public class RankingRepository : IRankingRepository {
                         AND r.create_date BETWEEN CONCAT(CURDATE(), ' 00:00:00') AND CONCAT(CURDATE(), ' 23:59:59')
                     )
                     SELECT 
-                        ranking, 
-                        user_name, 
-                        rank_value, 
-                        create_date
+                        ru.ranking, 
+                        ru.user_name, 
+                        ru.rank_value, 
+                        ru.create_date
                     FROM RankedUsers ru
                     INNER JOIN tb_user_info info ON info.user_no = ru.user_no
                     WHERE info.user_id = @userId;";
@@ -55,7 +56,7 @@ public class RankingRepository : IRankingRepository {
             string sql = @"
                 SELECT 
                     RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
-                    r.game_type, r.rank_value, r.create_date, u.user_name
+                    r.rank_value, r.create_date, u.user_name
                 FROM 
                     tb_rank r
                 INNER JOIN 
@@ -123,10 +124,12 @@ public class RankingRepository : IRankingRepository {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
                 INSERT INTO tb_rank (game_type, user_no, rank_value, create_date)
-                VALUES (@gameType, @userNo, @rankValue, NOW())";
+                SELECT @gameType, u.user_no, @rankValue, NOW()
+                FROM tb_user_info u
+                WHERE u.user_id = @userId;";
 
-            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
-            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
+            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
+            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
             return rowsAffected > 0;
         }
     }
@@ -135,28 +138,31 @@ public class RankingRepository : IRankingRepository {
     public async Task<bool> UpdateRank(RankInsertDto rankDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
-                UPDATE tb_rank
+                UPDATE tb_rank r
+                JOIN tb_user_info u ON r.user_no = u.user_no
                 SET rank_value = @rankValue, create_date = NOW()
-                WHERE game_type = @gameType
-                    AND user_no = @userNo
-                    AND DATE(create_date) = CURDATE()
-                    AND rank_value < @rankValue;";
+                WHERE r.game_type = @gameType
+                    AND u.user_id = @userId
+                    AND DATE(r.create_date) = CURDATE()
+                    AND r.rank_value < @rankValue;";
 
-            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
-            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo, rankDto.rankValue });
+            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
+            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
             return rowsAffected > 0;
         }
     }
 
     public async Task<bool> CheckRankExists(RankInsertDto rankDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            string sql = @"SELECT rank_value FROM tb_rank
-                    WHERE game_type = @gameType
-                        AND user_no = @userNo
-                        AND DATE(create_date) = CURDATE()
-                    LIMIT 1;";
-            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userNo });
-            bool exist = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userNo });
+            string sql = @"SELECT rank_value 
+                    FROM tb_rank
+                    INNER JOIN INFO ON INFO.user_no = tb_rank.user_no
+                    WHERE 
+                        tb_rank.game_type = @gameType
+                        AND INFO.user_id = @userId
+                        AND DATE(tb_rank.create_date) = CURDATE()";
+            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId });
+            bool exist = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userId }) != null;
             return exist;
         }
     }

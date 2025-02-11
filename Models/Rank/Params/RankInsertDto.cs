@@ -2,8 +2,8 @@
 
 public class RankInsertDto {
 
-    [SwaggerSchema("유저 식별번호")]
-    public int userNo {  get; set; }
+    [SwaggerSchema("유저 ID")]
+    public int userId {  get; set; }
 
     [SwaggerSchema("점수")]
     public int rankValue { get; set; }
