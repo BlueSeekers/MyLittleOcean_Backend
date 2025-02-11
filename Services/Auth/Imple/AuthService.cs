@@ -47,8 +47,8 @@ public class AuthService : IAuthService {
             throw new UnauthorizedAccessException("Invalid credentials");
         }
 
-        var accessToken = GenerateToken(userId, TimeSpan.FromMinutes(30));
-        var refreshToken = GenerateToken(userId, TimeSpan.FromDays(7));
+        var accessToken = GenerateToken(userId, TimeSpan.FromDays(30));
+        var refreshToken = GenerateToken(userId, TimeSpan.FromDays(30));
 
         return (accessToken, refreshToken);
     }
