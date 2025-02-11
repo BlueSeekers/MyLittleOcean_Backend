@@ -3,7 +3,7 @@
 public class RankInsertDto {
 
     [SwaggerSchema("유저 ID")]
-    public int userId {  get; set; }
+    public string userId {  get; set; }
 
     [SwaggerSchema("점수")]
     public int rankValue { get; set; }
