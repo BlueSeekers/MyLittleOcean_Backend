@@ -1,24 +1,15 @@
 ﻿using Swashbuckle.AspNetCore.Annotations;
 
-public class RankDetail
-{
-    private int rankNo;
-    private int userNo;
-    private int rankValue;
-    private string? userName;
-    private string? createDate;
-    private string? gameType;
+public class RankDetail {
 
-    [SwaggerSchema("랭킹 식별번호")]
-    public int RankNo { get => rankNo; set => rankNo = value; }
+    [SwaggerSchema("랭크 순위")]
+    public int rank { get; set; }
     [SwaggerSchema("유저 No")]
-    public int UserNo { get => userNo; set => userNo = value; }
+    public int userNo { get; set; }
     [SwaggerSchema("점수")]
-    public int RankValue { get => rankValue; set => rankValue = value; }
+    public int rankValue { get; set; }
     [SwaggerSchema("유저 이름")]
-    public string UserName { get => userName; set => userName = value; }
+    public string? userName { get; set; }
     [SwaggerSchema("등록일자")]
-    public string CreateDate { get => createDate; set => createDate = value; }
-    [SwaggerSchema("게임 종류")]
-    public string GameType { get => gameType; set => gameType = value; }
+    public string? createDate { get; set; }
 }

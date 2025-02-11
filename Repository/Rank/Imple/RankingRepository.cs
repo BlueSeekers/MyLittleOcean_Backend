@@ -1,7 +1,6 @@
 ﻿using MySqlConnector;
 using Dapper;
 using System.Data;
-using System.Security.AccessControl;
 
 public class RankingRepository : IRankingRepository {
     private readonly string _connectionString;
@@ -13,25 +12,52 @@ public class RankingRepository : IRankingRepository {
     }
 
     // 특정 유저의 랭킹 순위 조회
-    public RankDetail? GetUserRanking(string gameType, int userNo) {
+    public RankDetail? GetUserRanking(string gameType, string startDate, string endDate, int userNo) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            var query = @"
-            SELECT r.*, u.user_name
-            FROM tb_rank r
-            LEFT JOIN mylio.tb_user_info u ON r.user_no = u.user_no
-            WHERE r.game_type = @GameType
-            AND r.user_no = @UserNo";
+            var query = @" 
+                    WITH RankedUsers AS (
+                        SELECT 
+                            RANK() OVER (ORDER BY r.rank_value DESC) AS rank,
+                            r.user_no,
+                            r.rank_value,
+                            r.create_date,
+                            u.user_name
+                        FROM tb_rank r
+                        LEFT JOIN tb_user_info u ON r.user_no = u.user_no
+                        WHERE r.game_type = @GameType
+                        AND r.create_date BETWEEN @StartDate AND @EndDate
+                    )
+                    SELECT 
+                        rank_position, 
+                        user_name, 
+                        rank_value, 
+                        create_date
+                    FROM RankedUsers
+                    WHERE user_no = @UserNo;";
 
-            Task<int> task = _queryLogger.ExecuteAsync(query, new { GameType = gameType, UserNo = userNo });
-            var rank = db.QuerySingleOrDefault<RankDetail>(query, new { GameType = gameType, UserNo = userNo });
-            return rank;
+            Task<int> task = _queryLogger.ExecuteAsync(query, new {
+                GameType = gameType,
+                StartDate = startDate,
+                EndDate = endDate,
+                UserNo = userNo
+            });
+            var userRank = db.QuerySingleOrDefault<RankDetail>(query, new {
+                GameType = gameType,
+                StartDate = startDate,
+                EndDate = endDate,
+                UserNo = userNo
+            });
+            return userRank;
         }
     }
+
     // 기간별 상위 랭킹 조회
     public List<RankDetail> GetTopRanksByPeriod(string gameType, string startDate, string endDate, int topN) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"
-                SELECT r.rank_no, r.game_type, r.user_no, r.rank_value, r.create_date, u.user_name
+                SELECT 
+                    RANK() OVER (ORDER BY r.rank_value DESC) AS rank,
+                    r.rank_no, r.game_type, r.user_no, r.rank_value, r.create_date, u.user_name
                 FROM tb_rank r
                 LEFT JOIN mylio.tb_user_info u ON r.user_no = u.user_no
                 WHERE r.game_type = @GameType

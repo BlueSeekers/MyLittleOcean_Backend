@@ -17,11 +17,16 @@ public class RankingController : ControllerBase
     [HttpGet("rank")]
     public ActionResult<IEnumerable<RankDetail>> GetRanks(string gameType, int userNo)
     {
-        RankingInfoDto rankingInfo = new RankingInfoDto();
-        rankingInfo.UserRank = _rankingService.GetMyRanking(gameType, userNo);
-        rankingInfo.TodayTopRanks = _rankingService.GetDailyRanks(gameType, DateTime.Today);
-        rankingInfo.MonthTopRanks = _rankingService.GetMonthlyRanks(gameType, DateTime.Today);
-        return Ok(rankingInfo);
+        try {
+            RankingInfoDto rankingInfo = new RankingInfoDto();
+            rankingInfo.UserRank = _rankingService.GetMyRanking(gameType, DateTime.Today, userNo);
+            rankingInfo.TodayTopRanks = _rankingService.GetDailyRanks(gameType, DateTime.Today);
+            rankingInfo.MonthTopRanks = _rankingService.GetMonthlyRanks(gameType, DateTime.Today);
+            return Ok(rankingInfo);
+        }
+        catch (Exception ex) {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 
     // 랭킹 데이터 추가 또는 업데이트

@@ -6,11 +6,14 @@
     }
 
     // 내 랭킹 조회
-    public RankDetail GetMyRanking(string gameType, int userNo) {
+    public RankDetail? GetMyRanking(string gameType, DateTime date, int userNo) {
         ValidateGameType(gameType);
         ValidateUserNo(userNo);
 
-        return _rankingRepository.GetUserRanking(gameType, userNo);
+        var startDate = date.Date; // 해당일 00:00:00
+        var endDate = startDate.AddDays(1).AddSeconds(-1); // 해당일 23:59:59
+
+        return _rankingRepository.GetUserRanking(gameType, ToDateTimeString(startDate), ToDateTimeString(endDate), userNo);
     }
     // 전체 랭킹(일간) 조회
     public List<RankDetail> GetDailyRanks(string gameType, DateTime date, int count) {
