@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.AccessControl;
 
 [ApiController]
 [Route("[controller]")]
@@ -15,10 +13,11 @@ public class RankingController : ControllerBase {
 
     // 랭킹 데이터 조회 - 일간/ 월간
     [HttpPost("rank")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RankInfoDto))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> GetRanks([FromBody] RankParamsDto rankParams) {
+    public async Task<ActionResult<RankInfoDto>> GetRanks([FromBody] RankParamsDto rankParams) {
         if (string.IsNullOrEmpty(rankParams.userId)) {
             return BadRequest(new { error = "Username Or GameType required" });
         }
@@ -45,7 +44,8 @@ public class RankingController : ControllerBase {
 
     // 랭킹 데이터 추가 또는 업데이트
     [HttpPut("rank/insert")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> InsertRank([FromBody] RankInsertDto rankParams) {
         try {

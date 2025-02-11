@@ -12,8 +12,10 @@ public class UserDataController : ControllerBase {
     }
 
     [HttpPatch("use/coin")]
+    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UseCoin([FromBody] UserUseDto useDataDto) {
         if (useDataDto.UserNo == null && useDataDto.UserId == null) {
             return BadRequest("No information exists");
@@ -39,8 +41,10 @@ public class UserDataController : ControllerBase {
     }
 
     [HttpPatch("use/token")]
+    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UseToken([FromBody] UserUseDto useDataDto) {
         if (useDataDto.UserNo == null && useDataDto.UserId == null) {
             return BadRequest("No information exists");
@@ -66,9 +70,11 @@ public class UserDataController : ControllerBase {
     }
 
     [HttpPatch("update/data")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserData))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UpdateData([FromBody] UserUpdateDataDto useDataDto) {
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserData>> UpdateData([FromBody] UserUpdateDataDto useDataDto) {
         try {
             var data = await _userDataService.UserDataUpdate(useDataDto);
             return data.Success ? Ok(data.Data) : StatusCode(500, new { message = data.Message });
@@ -79,9 +85,11 @@ public class UserDataController : ControllerBase {
     }
 
     [HttpPatch("get/reward")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserData))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> RewardPayment([FromBody] RewardParamsDto rewardParams) {
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserData>> RewardPayment([FromBody] RewardParamsDto rewardParams) {
         try {
             var data = await _userDataService.RewardPayment(rewardParams);
             return data.Success ? Ok(data.Data) : StatusCode(500, new { message = data.Message });
