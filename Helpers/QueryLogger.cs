@@ -1,14 +1,9 @@
-﻿using Dapper;
-using MySqlConnector;
-using System.Data;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 public class QueryLogger {
-    private readonly string _connectionString;
     private readonly ILogger<QueryLogger> _logger;
 
     public QueryLogger(IConfiguration configuration, ILogger<QueryLogger> logger) {
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
         _logger = logger;
     }
 
@@ -16,27 +11,25 @@ public class QueryLogger {
         string loggedSql = FormatSqlWithParams(sql, param);
         _logger.LogInformation("Executing SQL: {Query}", loggedSql);
 
-        using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            return await db.ExecuteAsync(sql, param);
-        }
+        // 실제 DB 실행 제거
+        await Task.CompletedTask; // 비동기 메서드 유지
+        return 0; // 항상 0 리턴
     }
 
     public async Task<T> QuerySingleAsync<T>(string sql, object param = null) {
         string loggedSql = FormatSqlWithParams(sql, param);
         _logger.LogInformation("Executing SQL: {Query}", loggedSql);
 
-        using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            return await db.QuerySingleOrDefaultAsync<T>(sql, param);
-        }
+        await Task.CompletedTask; // 비동기 메서드 유지
+        return default(T); // 기본값 반환
     }
 
     public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null) {
         string loggedSql = FormatSqlWithParams(sql, param);
         _logger.LogInformation("Executing SQL: {Query}", loggedSql);
 
-        using (IDbConnection db = new MySqlConnection(_connectionString)) {
-            return await db.QueryAsync<T>(sql, param);
-        }
+        await Task.CompletedTask; // 비동기 메서드 유지
+        return Enumerable.Empty<T>(); // 빈 컬렉션 반환
     }
 
     private string FormatSqlWithParams(string sql, object param) {
