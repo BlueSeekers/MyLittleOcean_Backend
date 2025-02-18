@@ -21,7 +21,7 @@ public class RankingRepository : IRankingRepository {
                             u.user_no,
                             RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
                             r.rank_value,
-                            DATE_FORMAT(r.create_date, '%y/%m/%d'),
+                            r.create_date,
                             u.user_name
                         FROM tb_rank r
                         LEFT JOIN tb_user_info u ON r.user_no = u.user_no
@@ -32,7 +32,7 @@ public class RankingRepository : IRankingRepository {
                         ru.ranking, 
                         ru.user_name, 
                         ru.rank_value, 
-                        ru.create_date
+                        DATE_FORMAT(ru.create_date, '%y/%m/%d')
                     FROM RankedUsers ru
                     INNER JOIN tb_user_info info ON info.user_no = ru.user_no
                     WHERE info.user_id = @userId;";
@@ -57,7 +57,7 @@ public class RankingRepository : IRankingRepository {
             string sql = @"
                 SELECT 
                     RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
-                    r.rank_value, DATE_FORMAT(r.create_date, '%y/%m/%d'), u.user_name
+                    r.rank_value, DATE_FORMAT(r.create_date, '%y/%m/%d') as create_date, u.user_name
                 FROM 
                     tb_rank r
                 INNER JOIN 
@@ -91,7 +91,7 @@ public class RankingRepository : IRankingRepository {
             string sql = @"
                 SELECT 
                     RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
-                    r.game_type, r.rank_value, DATE_FORMAT(r.create_date, '%y/%m/%d'), u.user_name
+                    r.game_type, r.rank_value, DATE_FORMAT(r.create_date, '%y/%m/%d') as create_date, u.user_name
                 FROM 
                     tb_rank r
                 INNER JOIN 
