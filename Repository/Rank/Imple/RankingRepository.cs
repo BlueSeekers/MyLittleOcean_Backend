@@ -34,7 +34,9 @@ public class RankingRepository : IRankingRepository {
                         DATE_FORMAT(ru.create_date, '%y/%m/%d') AS create_date
                     FROM RankedUsers ru
                     INNER JOIN tb_user_info info ON info.user_no = ru.user_no
-                    WHERE info.user_id = @userId AND ru.ranking = 1 ;";
+                    WHERE info.user_id = @userId
+                    ORDER BY ru.rank_value DESC
+                    LIMIT 1;";
 
             await _queryLogger.ExecuteAsync(query, new {
                 gameType = rankParams.gameType.ToString(),
@@ -73,8 +75,10 @@ public class RankingRepository : IRankingRepository {
                         ru.rank_value, 
                         DATE_FORMAT(ru.create_date, '%y/%m/%d') AS create_date
                     FROM RankedUsers ru
-                    INNER JOIN tb_user_info info ON info.user_no = ru.user_no
-                    WHERE info.user_id = @userId AND ru.ranking = 1 ;";
+                        INNER JOIN tb_user_info info ON info.user_no = ru.user_no
+                    WHERE info.user_id = @userId
+                    ORDER BY ru.rank_value DESC
+                    LIMIT 1 ;";
 
             await _queryLogger.ExecuteAsync(query, new {
                 gameType = rankParams.gameType.ToString(),
