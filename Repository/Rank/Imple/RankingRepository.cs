@@ -1,6 +1,7 @@
 ﻿using MySqlConnector;
 using Dapper;
 using System.Data;
+using System.Security.AccessControl;
 
 public class RankingRepository : IRankingRepository {
     private readonly string _connectionString;
@@ -128,8 +129,8 @@ public class RankingRepository : IRankingRepository {
                 FROM tb_user_info u
                 WHERE u.user_id = @userId;";
 
-            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
-            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
+            await _queryLogger.ExecuteAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId, rankDto.rankValue });
+            int rowsAffected = await db.ExecuteAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId, rankDto.rankValue });
             return rowsAffected > 0;
         }
     }
@@ -146,8 +147,8 @@ public class RankingRepository : IRankingRepository {
                     AND DATE(r.create_date) = CURDATE()
                     AND r.rank_value < @rankValue;";
 
-            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
-            int rowsAffected = await db.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue });
+            await _queryLogger.ExecuteAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId, rankDto.rankValue });
+            int rowsAffected = await db.ExecuteAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId, rankDto.rankValue });
             return rowsAffected > 0;
         }
     }
@@ -162,8 +163,8 @@ public class RankingRepository : IRankingRepository {
                         rank.game_type = @gameType
                         AND info.user_id = @userId
                         AND DATE(rank.create_date) = CURDATE()";
-            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId });
-            bool exist = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userId }) != null;
+            await _queryLogger.ExecuteAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId });
+            bool exist = await db.QueryFirstOrDefaultAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId }) != null;
             return exist;
         }
     }
@@ -178,8 +179,8 @@ public class RankingRepository : IRankingRepository {
                         AND info.user_id = @userId
                         AND DATE(rank.create_date) = CURDATE()
                         AND rank.rank_value < @rankValue";
-            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId , rankDto.rankValue });
-            bool check = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue }) != null;
+            await _queryLogger.ExecuteAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId , rankDto.rankValue });
+            bool check = await db.QueryFirstOrDefaultAsync(sql, new { gameType = rankDto.gameType.ToString(), rankDto.userId, rankDto.rankValue }) != null;
             return check;
         }
     }
