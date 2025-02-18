@@ -47,11 +47,18 @@ public class RankingController : ControllerBase {
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> InsertRank([FromBody] RankInsertDto rankParams) {
         try {
             var result = await _rankingService.InsertRank(rankParams);
-            if (!result.Success)
-                return NotFound(new { message = result.Message });
+            if (!result.Success) {
+                if(result.Data == RankInsertStatus.DUPLICATE_ENTRY) {
+                    return StatusCode(422, new { error = result.Message });
+                }
+                return StatusCode(500, new { error = result.Message });
+            }
+                
             return Ok(result.Data);
         }
         catch (Exception ex) {

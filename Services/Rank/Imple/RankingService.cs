@@ -1,4 +1,12 @@
-﻿public class RankingService : IRankingService {
+﻿public enum RankInsertStatus{
+    UPDATE_SUCCESS,
+    UPDATE_FAILED,
+    INSERT_SUCCESS,
+    INSERT_FAILD,
+    DUPLICATE_ENTRY
+}
+
+public class RankingService : IRankingService {
     private readonly IRankingRepository _rankingRepository;
 
     public RankingService(IRankingRepository rankingRepository) {
@@ -21,24 +29,29 @@
     }
 
     // 랭킹 데이터 추가 또는 업데이트
-    public async Task<ServiceResult<bool>> InsertRank(RankInsertDto rankParams) {
+    public async Task<ServiceResult<RankInsertStatus>> InsertRank(RankInsertDto rankParams) {
+        //오늘 날짜의 해당 게임 데이터가 있으면 true
         var exist = await _rankingRepository.CheckRankExists(rankParams);
         if (exist) {
+            var dataLow = await _rankingRepository.CheckRankLow(rankParams);
+            if (!dataLow) {
+                return new ServiceResult<RankInsertStatus>(false, "The value that already exists is greater", RankInsertStatus.DUPLICATE_ENTRY);
+            }
             var update = await _rankingRepository.UpdateRank(rankParams);
             if (update) {
-                return new ServiceResult<bool>(true, "Success", true);
+                return new ServiceResult<RankInsertStatus>(true, "Success", RankInsertStatus.UPDATE_SUCCESS);
             }
             else {
-                return new ServiceResult<bool>(false, "Failed Update Rank Data");
+                return new ServiceResult<RankInsertStatus>(false, "Failed Update Rank Data", RankInsertStatus.UPDATE_FAILED);
             }
         }
         else {
             var insert = await _rankingRepository.InsertRank(rankParams);
             if (insert) {
-                return new ServiceResult<bool>(true, "Success", true);
+                return new ServiceResult<RankInsertStatus>(true, "Success", RankInsertStatus.INSERT_SUCCESS);
             }
             else {
-                return new ServiceResult<bool>(true, "Failed Insert Rank Data");
+                return new ServiceResult<RankInsertStatus>(true, "Failed Insert Rank Data", RankInsertStatus.INSERT_FAILD);
             }
         }
     }

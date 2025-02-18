@@ -8,4 +8,5 @@
     Task<bool> UpdateRank(RankInsertDto rank);
 
     Task<bool> CheckRankExists(RankInsertDto rank);
+    Task<bool> CheckRankLow(RankInsertDto rank);
 }

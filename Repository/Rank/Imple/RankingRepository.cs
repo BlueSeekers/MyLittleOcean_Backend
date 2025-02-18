@@ -152,6 +152,7 @@ public class RankingRepository : IRankingRepository {
         }
     }
 
+    //현재 날짜에 데이터 있는지 여부
     public async Task<bool> CheckRankExists(RankInsertDto rankDto) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             string sql = @"SELECT rank_value 
@@ -164,6 +165,22 @@ public class RankingRepository : IRankingRepository {
             await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId });
             bool exist = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userId }) != null;
             return exist;
+        }
+    }
+
+    public async Task<bool> CheckRankLow(RankInsertDto rankDto) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            string sql = @"SELECT rank_value 
+                    FROM tb_rank rank
+                    INNER JOIN tb_user_info info ON info.user_no = rank.user_no
+                    WHERE 
+                        rank.game_type = @gameType
+                        AND info.user_id = @userId
+                        AND DATE(rank.create_date) = CURDATE()
+                        AND rank.rank_value < @rankValue";
+            await _queryLogger.ExecuteAsync(sql, new { rankDto.gameType, rankDto.userId , rankDto.rankValue });
+            bool check = await db.QueryFirstOrDefaultAsync(sql, new { rankDto.gameType, rankDto.userId, rankDto.rankValue }) != null;
+            return check;
         }
     }
 }
