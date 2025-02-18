@@ -32,7 +32,7 @@ public class RankingRepository : IRankingRepository {
                         ru.ranking, 
                         ru.user_name, 
                         ru.rank_value, 
-                        DATE_FORMAT(ru.create_date, '%y/%m/%d')
+                        DATE_FORMAT(ru.create_date, '%y/%m/%d') AS create_date
                     FROM RankedUsers ru
                     INNER JOIN tb_user_info info ON info.user_no = ru.user_no
                     WHERE info.user_id = @userId;";
