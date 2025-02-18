@@ -1,6 +1,7 @@
 ﻿public interface IRankingRepository
 {
-    Task<RankDetail?> GetUserRanking(RankParamsDto rankParams);
+    Task<RankDetail?> GetDailyUserRanking(RankParamsDto rankParams);
+    Task<RankDetail?> GetMonthUserRanking(RankParamsDto rankParams);
     Task<List<RankDetail>> GetDailyRankList(RankParamsDto rankParams);
     Task<List<RankDetail>> GetMonthRankList(RankParamsDto rankParams);
 

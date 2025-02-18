@@ -1,7 +1,6 @@
 ﻿using MySqlConnector;
 using Dapper;
 using System.Data;
-using System.Security.AccessControl;
 
 public class RankingRepository : IRankingRepository {
     private readonly string _connectionString;
@@ -12,8 +11,8 @@ public class RankingRepository : IRankingRepository {
         _queryLogger = queryLogger;
     }
 
-    // 특정 유저의 랭킹 순위 조회
-    public async Task<RankDetail?> GetUserRanking(RankParamsDto rankParams) {
+    // 특정 유저의 랭킹 순위 조회 (일간)
+    public async Task<RankDetail?> GetDailyUserRanking(RankParamsDto rankParams) {
         using (IDbConnection db = new MySqlConnection(_connectionString)) {
             var query = @" 
                     WITH RankedUsers AS (
@@ -27,6 +26,46 @@ public class RankingRepository : IRankingRepository {
                         LEFT JOIN tb_user_info u ON r.user_no = u.user_no
                         WHERE r.game_type = @gameType
                         AND r.create_date BETWEEN CONCAT(CURDATE(), ' 00:00:00') AND CONCAT(CURDATE(), ' 23:59:59')
+                    )
+                    SELECT 
+                        ru.ranking, 
+                        ru.user_name, 
+                        ru.rank_value, 
+                        DATE_FORMAT(ru.create_date, '%y/%m/%d') AS create_date
+                    FROM RankedUsers ru
+                    INNER JOIN tb_user_info info ON info.user_no = ru.user_no
+                    WHERE info.user_id = @userId;";
+
+            await _queryLogger.ExecuteAsync(query, new {
+                gameType = rankParams.gameType.ToString(),
+                userId = rankParams.userId
+            });
+
+            var userRank = await db.QuerySingleOrDefaultAsync<RankDetail>(query, new {
+                gameType = rankParams.gameType.ToString(),
+                userId = rankParams.userId
+            });
+
+            return userRank;
+        }
+    }
+
+    // 특정 유저의 랭킹 순위 조회 (월간)
+    public async Task<RankDetail?> GetMonthUserRanking(RankParamsDto rankParams) {
+        using (IDbConnection db = new MySqlConnection(_connectionString)) {
+            var query = @" 
+                    WITH RankedUsers AS (
+                        SELECT 
+                            u.user_no,
+                            RANK() OVER (ORDER BY r.rank_value DESC) AS ranking,
+                            r.rank_value,
+                            r.create_date,
+                            u.user_name
+                        FROM tb_rank r
+                        LEFT JOIN tb_user_info u ON r.user_no = u.user_no
+                        WHERE r.game_type = @gameType
+                        AND r.create_date 
+                            BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())
                     )
                     SELECT 
                         ru.ranking, 

@@ -1,4 +1,4 @@
-﻿public enum RankInsertStatus{
+﻿public enum RankInsertStatus {
     UPDATE_SUCCESS,
     UPDATE_FAILED,
     INSERT_SUCCESS,
@@ -15,7 +15,12 @@ public class RankingService : IRankingService {
 
     // 내 랭킹 조회
     public async Task<RankDetail?> GetMyRanking(RankParamsDto rankParams) {
-        return await _rankingRepository.GetUserRanking(rankParams);
+        if (rankParams.dateType == DateType.Daily) {
+            return await _rankingRepository.GetDailyUserRanking(rankParams);
+        }
+        else {
+            return await _rankingRepository.GetMonthUserRanking(rankParams);
+        }
     }
 
     // 전체 랭킹조회
