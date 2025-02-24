@@ -4,8 +4,9 @@ public enum GameType{
     Coral = 0,
     Abyss,
     Dive,
-    Seeker
-
+    Seeker,
+    Arrow,
+    JumpKing
 }
 
 public enum DateType {
