@@ -6,7 +6,7 @@ public enum GameType{
     Dive,
     Seeker,
     Arrow,
-    JumpKing
+    Keeper
 }
 
 public enum DateType {
